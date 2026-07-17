@@ -9,3 +9,6 @@ Thumbs.db
 *.log
 .promptfoo/
 evaluations/results/
+.ai-bridge/session-log.jsonl
+.ai-bridge/execution-log.jsonl
+.ai-bridge/implementation-diff.patch
