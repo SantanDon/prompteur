@@ -1,0 +1,26 @@
+{
+  "name": "prompteur",
+  "version": "0.2.0",
+  "description": "A local-first prompt compiler, linter, and evaluation workbench.",
+  "type": "module",
+  "private": false,
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/SantanDon/prompteur.git"
+  },
+  "bugs": {
+    "url": "https://github.com/SantanDon/prompteur/issues"
+  },
+  "homepage": "https://github.com/SantanDon/prompteur#readme",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "test": "node --test",
+    "eval": "node scripts/evaluate.js",
+    "check": "node --check server.js && node --check src/app.js && node --test && node scripts/evaluate.js"
+  }
+}

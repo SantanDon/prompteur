@@ -1,0 +1,49 @@
+name: Feature or research proposal
+description: Propose a capability, methodology, target adapter, or evaluation improvement
+title: "proposal: "
+labels: [proposal, triage]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem to solve
+      description: Describe the user or maintainer problem without prescribing a tool first.
+    validations:
+      required: true
+  - type: textarea
+    id: case
+    attributes:
+      label: Representative case
+      description: Provide a safe prompt or workflow that demonstrates the need.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed direction
+      description: Explain the smallest useful behavior and the architecture layer it belongs in.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence or references
+      description: Link primary research, documentation, comparable tools, or observed failures.
+  - type: textarea
+    id: evaluation
+    attributes:
+      label: How should success be evaluated?
+      description: Define assertions, datasets, human judgment, model graders, cost, or latency criteria.
+    validations:
+      required: true
+  - type: checkboxes
+    id: boundaries
+    attributes:
+      label: Project boundaries
+      options:
+        - label: The proposal preserves a deterministic local path or explains why an ADR should change it.
+          required: true
+        - label: The proposal does not depend on presenting prompt length or a readiness score as proof of quality.
+          required: true
+        - label: I have identified any secret-handling, network, or execution-boundary changes.
+          required: true

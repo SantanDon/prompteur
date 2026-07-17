@@ -1,0 +1,65 @@
+name: Bug or regression
+description: Report a reproducible application, compiler, evaluation, or documentation defect
+title: "bug: "
+labels: [bug, triage]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use non-sensitive prompts and remove credentials or private model output.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Prompt normalization / IR
+        - Deterministic diagnostics
+        - Prompt compilation
+        - Model provider
+        - Browser interface
+        - Local server / security
+        - Tests / evaluations
+        - Documentation
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: Include the smallest safe prompt, target, settings, and exact actions.
+      placeholder: |
+        Prompt:
+        Target:
+        Settings:
+        Steps:
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: observed
+    attributes:
+      label: Observed behavior
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence
+      description: Add console output, diagnostics, screenshots, or failing checks without secrets.
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      placeholder: Windows 10, Node 22, Chrome 142, commit SHA
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Safety check
+      options:
+        - label: I removed API keys, private prompts, and personal data from this report.
+          required: true
