@@ -21,6 +21,6 @@
     "dev": "node server.js",
     "test": "node --test",
     "eval": "node scripts/evaluate.js",
-    "check": "node --check server.js && node --check src/app.js && node --test && node scripts/evaluate.js"
+    "check": "node --check server.js && node --check src/bootstrap.js && node --check src/app.js && node --test && node scripts/evaluate.js"
   }
 }

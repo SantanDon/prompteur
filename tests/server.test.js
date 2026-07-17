@@ -22,7 +22,14 @@ test('server exposes the app and health endpoint', async () => {
 
     const home = await fetch(`${baseUrl}/`);
     assert.equal(home.status, 200);
-    assert.match(await home.text(), /Make prompts more precise/);
+    const html = await home.text();
+    assert.match(html, /Make prompts more precise/);
+    assert.match(html, /href="\.\/style\.css"/);
+    assert.match(html, /src="\.\/src\/bootstrap\.js"/);
+
+    const bootstrap = await fetch(`${baseUrl}/src/bootstrap.js`);
+    assert.equal(bootstrap.status, 200);
+    assert.match(await bootstrap.text(), /import\('\.\/app\.js'\)/);
   });
 });
 

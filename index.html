@@ -8,12 +8,16 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="./style.css">
 </head>
 <body>
+  <div class="runtime-notice" id="runtime-notice" role="status" hidden>
+    <strong>Prompteur needs a local web server.</strong>
+    <span>Run <code>npm start</code>, then open <code>http://127.0.0.1:3030</code>. The raw HTML file cannot run JavaScript modules safely.</span>
+  </div>
   <div class="app-shell">
     <header class="app-header">
-      <a class="brand" href="/" aria-label="Prompteur home">
+      <a class="brand" href="./" aria-label="Prompteur home">
         <span class="brand-mark" aria-hidden="true">P</span>
         <span>
           <strong>Prompteur</strong>
@@ -199,6 +203,6 @@
   </dialog>
 
   <div class="toast-region" id="toast-region" aria-live="polite" aria-atomic="true"></div>
-  <script type="module" src="/src/app.js"></script>
+  <script defer src="./src/bootstrap.js"></script>
 </body>
 </html>

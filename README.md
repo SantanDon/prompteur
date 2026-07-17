@@ -39,6 +39,8 @@ http://127.0.0.1:3030
 
 The local compiler works immediately without installing dependencies, running a model, or configuring an API key.
 
+> Do not double-click `index.html` to run the application. Browsers restrict JavaScript modules loaded from `file://` URLs. Direct opening now keeps the intended styling and shows a setup notice, but the interactive application should be opened through `npm start` or the hosted demo.
+
 ## Optional model providers
 
 ### Ollama

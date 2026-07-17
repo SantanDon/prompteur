@@ -16,6 +16,7 @@ const STATIC_ROUTES = new Map([
   ['/index.html', ['index.html', 'text/html; charset=utf-8']],
   ['/style.css', ['style.css', 'text/css; charset=utf-8']],
   ['/src/app.js', ['src/app.js', 'text/javascript; charset=utf-8']],
+  ['/src/bootstrap.js', ['src/bootstrap.js', 'text/javascript; charset=utf-8']],
   ['/src/core/catalog.js', ['src/core/catalog.js', 'text/javascript; charset=utf-8']],
   ['/src/core/normalize.js', ['src/core/normalize.js', 'text/javascript; charset=utf-8']],
   ['/src/core/analyze.js', ['src/core/analyze.js', 'text/javascript; charset=utf-8']],

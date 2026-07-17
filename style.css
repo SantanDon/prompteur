@@ -44,6 +44,39 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+.runtime-notice {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px 18px;
+  border-bottom: 1px solid rgba(245, 190, 102, 0.35);
+  background: rgba(37, 29, 17, 0.96);
+  color: #f8ddb0;
+  font-size: 12px;
+  text-align: center;
+  backdrop-filter: blur(18px);
+}
+
+.runtime-notice[hidden] {
+  display: none;
+}
+
+.runtime-notice strong {
+  color: #fff2d9;
+}
+
+.runtime-notice code {
+  padding: 2px 5px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 5px;
+  background: rgba(0, 0, 0, 0.22);
+  color: #fff;
+}
+
 button,
 input,
 select,

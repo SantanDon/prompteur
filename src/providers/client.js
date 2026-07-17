@@ -1,9 +1,13 @@
+function apiUrl(path) {
+  return new URL(`./api/${path}`, document.baseURI);
+}
+
 export async function checkProvider(config) {
   if (config.provider === 'local') {
     return { ok: true, label: 'Local compiler ready' };
   }
 
-  const response = await fetch('/api/provider/health', {
+  const response = await fetch(apiUrl('provider/health'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -21,7 +25,7 @@ export async function checkProvider(config) {
 }
 
 export async function requestCandidate({ config, system, prompt }) {
-  const response = await fetch('/api/rewrite', {
+  const response = await fetch(apiUrl('rewrite'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
