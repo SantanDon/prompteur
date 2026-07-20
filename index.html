@@ -3,123 +3,157 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Prompteur is a local-first prompt compiler, linter, and evaluation workbench.">
-  <title>Prompteur · Prompt compiler</title>
+  <meta name="description" content="Prompteur is a local-first intent compiler, linter, and integration bridge for AI models and agents.">
+  <title>Prompteur · Intent compiler</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./style.css">
 </head>
 <body>
   <div class="runtime-notice" id="runtime-notice" role="status" hidden>
     <strong>Prompteur needs a local web server.</strong>
-    <span>Run <code>npm start</code>, then open <code>http://127.0.0.1:3030</code>. The raw HTML file cannot run JavaScript modules safely.</span>
+    <span>Run <code>npm start</code>, then open <code>http://127.0.0.1:3030</code>.</span>
   </div>
+
   <div class="app-shell">
-    <header class="app-header">
+    <header class="topbar">
       <a class="brand" href="./" aria-label="Prompteur home">
-        <span class="brand-mark" aria-hidden="true">P</span>
-        <span>
-          <strong>Prompteur</strong>
-          <small>prompt compiler</small>
-        </span>
+        <span class="brand-mark" aria-hidden="true">P:</span>
+        <span class="brand-name">Prompteur</span>
       </a>
 
-      <div class="header-actions">
-        <button class="status-pill" id="status-button" type="button" aria-label="Open provider settings">
-          <span class="status-dot" id="status-dot"></span>
+      <div class="topbar-actions">
+        <button class="provider-status" id="status-button" type="button" aria-label="Open provider settings">
+          <span class="status-dot" id="status-dot" aria-hidden="true"></span>
           <span id="status-label">Local compiler ready</span>
         </button>
-        <button class="icon-button" id="settings-button" type="button" aria-label="Open settings">⌘</button>
+        <button class="utility-button" id="settings-button" type="button">Settings</button>
       </div>
     </header>
 
-    <main>
-      <section class="intro-row" aria-labelledby="page-title">
+    <main class="workspace">
+      <section class="product-intro" aria-labelledby="page-title">
         <div>
-          <p class="eyebrow">Diagnose · compile · evaluate</p>
-          <h1 id="page-title">Make prompts more precise, not merely longer.</h1>
+          <p class="section-label">Intent compiler</p>
+          <h1 id="page-title">Compile rough instructions into a usable task contract.</h1>
         </div>
-        <p class="intro-copy">Prompteur converts rough intent into a model-neutral task contract, flags weak assumptions, and optionally generates a model-assisted candidate.</p>
+        <p class="intro-copy">Prompteur separates objective, context, constraints, output, and verification—then renders a deterministic baseline you can inspect before it reaches a model or agent.</p>
       </section>
 
-      <section class="workbench" aria-label="Prompt workbench">
-        <article class="panel input-panel">
-          <header class="panel-header">
-            <div>
-              <span class="panel-kicker">Source</span>
-              <h2>Raw intent</h2>
-            </div>
-            <button class="text-button" id="clear-button" type="button">Clear</button>
-          </header>
-
-          <textarea id="raw-prompt" spellcheck="true" placeholder="Describe what you need the model or agent to accomplish. Include context, hard constraints, and the result you expect when they matter."></textarea>
-
-          <footer class="input-footer">
-            <label class="inline-field" for="target-select">
+      <section class="compiler-frame" aria-label="Prompt compiler workbench">
+        <header class="compiler-toolbar">
+          <div class="target-group">
+            <label class="target-control" for="target-select">
               <span>Target</span>
-              <select id="target-select">
+              <select id="target-select" aria-describedby="target-description">
                 <option value="general">General model</option>
                 <option value="agent">Coding / tool agent</option>
                 <option value="research">Research model</option>
                 <option value="image">Image model</option>
               </select>
             </label>
-            <span class="character-count" id="character-count">0 characters</span>
-            <button class="primary-button" id="compile-button" type="button">
-              <span>Analyze &amp; compile</span>
-              <span aria-hidden="true">→</span>
-            </button>
-          </footer>
-        </article>
+            <p class="target-description" id="target-description">Balanced contract for a conversational model.</p>
+          </div>
+          <p class="keyboard-hint"><kbd>Ctrl</kbd><span>+</span><kbd>Enter</kbd><span>to compile</span></p>
+        </header>
 
-        <article class="panel output-panel">
-          <header class="panel-header output-header">
-            <div>
-              <span class="panel-kicker">Result</span>
-              <h2 id="result-title">Compiled prompt</h2>
+        <div class="compiler-grid">
+          <section class="compiler-pane source-pane" aria-labelledby="source-title">
+            <header class="pane-header">
+              <div class="pane-title-group">
+                <span class="pane-number" aria-hidden="true">01</span>
+                <div>
+                  <p class="pane-label">Source</p>
+                  <h2 id="source-title">Your intent</h2>
+                </div>
+              </div>
+              <button class="quiet-button" id="clear-button" type="button">Clear</button>
+            </header>
+
+            <div class="editor-region">
+              <label class="sr-only" for="raw-prompt">Instruction to compile</label>
+              <textarea id="raw-prompt" spellcheck="true" placeholder="Describe the outcome you need. Add context, hard constraints, and completion evidence only when they materially affect the result."></textarea>
             </div>
-            <div class="score-badge" id="score-badge" aria-label="Prompt readiness score">
-              <strong id="score-value">—</strong>
-              <span>/100</span>
-            </div>
-          </header>
 
-          <nav class="tab-list" aria-label="Result views">
-            <button class="tab-button active" type="button" data-tab="prompt">Prompt</button>
-            <button class="tab-button" type="button" data-tab="diagnostics">Diagnostics <span id="issue-count">0</span></button>
-            <button class="tab-button" type="button" data-tab="ir">IR</button>
-          </nav>
-
-          <section class="tab-panel active" id="tab-prompt" data-panel="prompt">
-            <pre class="output-content" id="compiled-output">Your compiled prompt will appear here.</pre>
+            <footer class="source-footer">
+              <div class="source-meta">
+                <span id="character-count">0 characters</span>
+                <span>Processed locally</span>
+              </div>
+              <button class="primary-button" id="compile-button" type="button">
+                <span>Compile intent</span>
+                <span aria-hidden="true">↵</span>
+              </button>
+            </footer>
           </section>
 
-          <section class="tab-panel" id="tab-diagnostics" data-panel="diagnostics" hidden>
-            <p class="diagnostic-summary" id="diagnostic-summary">Run an analysis to inspect ambiguity, output contracts, conflicts, and safety boundaries.</p>
-            <div class="issue-list" id="issue-list"></div>
-          </section>
+          <section class="compiler-pane result-pane" id="result-pane" data-state="empty" aria-labelledby="result-title">
+            <header class="pane-header result-header">
+              <div class="pane-title-group">
+                <span class="pane-number" aria-hidden="true">02</span>
+                <div>
+                  <p class="pane-label">Output</p>
+                  <h2 id="result-title">Task contract</h2>
+                  <p class="result-origin" id="result-origin">Deterministic local compiler</p>
+                </div>
+              </div>
+              <div class="readiness-score" id="score-badge" aria-live="polite" aria-label="Readiness score not yet calculated">
+                <span>Readiness</span>
+                <strong id="score-value">—</strong>
+                <small>/100</small>
+              </div>
+            </header>
 
-          <section class="tab-panel" id="tab-ir" data-panel="ir" hidden>
-            <pre class="output-content code-output" id="ir-output">No prompt IR generated yet.</pre>
-          </section>
-
-          <footer class="output-footer">
-            <span class="result-origin" id="result-origin">Deterministic local compiler</span>
-            <div class="output-actions">
-              <button class="secondary-button" id="optimize-button" type="button" disabled>Generate model candidate</button>
-              <button class="primary-button compact" id="copy-button" type="button" disabled>Copy prompt</button>
+            <div class="result-tabs" role="tablist" aria-label="Compiled result views">
+              <button class="tab-button active" id="tab-button-prompt" type="button" role="tab" aria-selected="true" aria-controls="tab-prompt" data-tab="prompt">Contract</button>
+              <button class="tab-button" id="tab-button-diagnostics" type="button" role="tab" aria-selected="false" aria-controls="tab-diagnostics" tabindex="-1" data-tab="diagnostics">Findings <span id="issue-count">0</span></button>
+              <button class="tab-button" id="tab-button-ir" type="button" role="tab" aria-selected="false" aria-controls="tab-ir" tabindex="-1" data-tab="ir">Prompt IR</button>
             </div>
-          </footer>
-        </article>
-      </section>
 
-      <section class="quality-grid" aria-label="Prompt quality dimensions">
-        <article><span>Clarity</span><strong id="metric-clarity">—</strong><small>Objective and references</small></article>
-        <article><span>Context</span><strong id="metric-context">—</strong><small>Relevant background</small></article>
-        <article><span>Constraints</span><strong id="metric-constraints">—</strong><small>Hard boundaries</small></article>
-        <article><span>Output</span><strong id="metric-output">—</strong><small>Deliverable contract</small></article>
-        <article><span>Verification</span><strong id="metric-verification">—</strong><small>Completion evidence</small></article>
+            <section class="tab-panel active" id="tab-prompt" role="tabpanel" aria-labelledby="tab-button-prompt" data-panel="prompt">
+              <pre class="output-content" id="compiled-output" aria-live="polite">Compile an instruction to inspect its task contract.</pre>
+            </section>
+
+            <section class="tab-panel" id="tab-diagnostics" role="tabpanel" aria-labelledby="tab-button-diagnostics" data-panel="diagnostics" hidden>
+              <p class="diagnostic-summary" id="diagnostic-summary">Run the compiler to inspect ambiguity, missing contracts, conflicts, and instruction boundaries.</p>
+              <div class="issue-list" id="issue-list"></div>
+            </section>
+
+            <section class="tab-panel" id="tab-ir" role="tabpanel" aria-labelledby="tab-button-ir" data-panel="ir" hidden>
+              <pre class="output-content code-output" id="ir-output">No Prompt IR generated yet.</pre>
+            </section>
+
+            <footer class="result-footer">
+              <button class="secondary-button" id="optimize-button" type="button" disabled>Generate candidate</button>
+              <button class="primary-button compact" id="copy-button" type="button" disabled>Copy contract</button>
+            </footer>
+          </section>
+        </div>
+
+        <footer class="quality-strip" aria-label="Prompt contract signals">
+          <div class="quality-heading">
+            <span>Contract signals</span>
+            <small>Diagnostic heuristics, not model-accuracy scores</small>
+          </div>
+          <div class="quality-metrics">
+            <div class="quality-metric" data-metric="clarity" role="progressbar" aria-label="Clarity" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+              <div><span>Clarity</span><strong id="metric-clarity">—</strong></div><span class="metric-track"><span></span></span>
+            </div>
+            <div class="quality-metric" data-metric="context" role="progressbar" aria-label="Context" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+              <div><span>Context</span><strong id="metric-context">—</strong></div><span class="metric-track"><span></span></span>
+            </div>
+            <div class="quality-metric" data-metric="constraints" role="progressbar" aria-label="Constraints" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+              <div><span>Constraints</span><strong id="metric-constraints">—</strong></div><span class="metric-track"><span></span></span>
+            </div>
+            <div class="quality-metric" data-metric="output" role="progressbar" aria-label="Output contract" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+              <div><span>Output</span><strong id="metric-output">—</strong></div><span class="metric-track"><span></span></span>
+            </div>
+            <div class="quality-metric" data-metric="verification" role="progressbar" aria-label="Verification" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+              <div><span>Verification</span><strong id="metric-verification">—</strong></div><span class="metric-track"><span></span></span>
+            </div>
+          </div>
+        </footer>
       </section>
     </main>
   </div>
@@ -128,70 +162,79 @@
     <form method="dialog" id="settings-form">
       <header class="dialog-header">
         <div>
-          <p class="eyebrow">Configuration</p>
-          <h2 id="settings-title">Compiler &amp; provider settings</h2>
+          <p class="section-label">Configuration</p>
+          <h2 id="settings-title">Compiler settings</h2>
+          <p>Choose how Prompteur compiles locally and whether it may request a separate model candidate.</p>
         </div>
-        <button class="icon-button" id="close-settings-button" type="button" aria-label="Close settings">×</button>
+        <button class="utility-button" id="close-settings-button" type="button">Close</button>
       </header>
 
       <div class="dialog-body">
         <section class="settings-section">
-          <h3>Optimization engine</h3>
-          <div class="radio-cards">
-            <label><input type="radio" name="provider" value="local"><span><strong>Local compiler</strong><small>Instant, deterministic, private</small></span></label>
-            <label><input type="radio" name="provider" value="ollama"><span><strong>Ollama candidate</strong><small>Local model-assisted rewrite</small></span></label>
-            <label><input type="radio" name="provider" value="gemini"><span><strong>Gemini candidate</strong><small>Remote model-assisted rewrite</small></span></label>
+          <div class="settings-heading">
+            <h3>Optimization engine</h3>
+            <p>The deterministic baseline is always generated first.</p>
+          </div>
+          <div class="radio-list">
+            <label><input type="radio" name="provider" value="local"><span><strong>Local compiler</strong><small>Instant, deterministic, and private</small></span></label>
+            <label><input type="radio" name="provider" value="ollama"><span><strong>Ollama candidate</strong><small>Ask a model running on localhost for a separate rewrite</small></span></label>
+            <label><input type="radio" name="provider" value="gemini"><span><strong>Gemini candidate</strong><small>Ask Gemini for a separate rewrite through the local proxy</small></span></label>
           </div>
         </section>
 
         <section class="settings-section provider-fields" id="ollama-fields" hidden>
-          <h3>Ollama</h3>
-          <label class="field"><span>Local host</span><input id="ollama-host" type="url" autocomplete="off"></label>
-          <label class="field"><span>Model</span><input id="ollama-model" type="text" autocomplete="off"></label>
+          <div class="settings-heading"><h3>Ollama</h3><p>Remote hosts are intentionally rejected.</p></div>
+          <div class="field-grid">
+            <label class="field"><span>Local host</span><input id="ollama-host" type="url" autocomplete="off"></label>
+            <label class="field"><span>Model</span><input id="ollama-model" type="text" autocomplete="off"></label>
+          </div>
         </section>
 
         <section class="settings-section provider-fields" id="gemini-fields" hidden>
-          <h3>Gemini</h3>
-          <label class="field"><span>API key</span><input id="gemini-key" type="password" autocomplete="off" placeholder="Uses server environment when empty"></label>
-          <label class="field"><span>Model</span><input id="gemini-model" type="text" autocomplete="off"></label>
-          <p class="field-note">Keys entered here remain in memory for this page only and are not written to browser storage.</p>
+          <div class="settings-heading"><h3>Gemini</h3><p>Keys entered here remain in page memory only.</p></div>
+          <div class="field-grid">
+            <label class="field"><span>API key</span><input id="gemini-key" type="password" autocomplete="off" placeholder="Uses server environment when empty"></label>
+            <label class="field"><span>Model</span><input id="gemini-model" type="text" autocomplete="off"></label>
+          </div>
         </section>
 
-        <section class="settings-section settings-grid">
-          <h3>Compilation defaults</h3>
-          <label class="field"><span>Persona</span>
-            <select id="persona-select">
-              <option value="none">No forced persona</option>
-              <option value="general">General specialist</option>
-              <option value="software">Software engineer</option>
-              <option value="research">Research analyst</option>
-              <option value="creative">Creative director</option>
-              <option value="security">Security reviewer</option>
-            </select>
-          </label>
-          <label class="field"><span>Tone</span>
-            <select id="tone-select">
-              <option value="neutral">Neutral</option>
-              <option value="direct">Direct</option>
-              <option value="analytical">Analytical</option>
-              <option value="creative">Creative</option>
-              <option value="formal">Formal</option>
-            </select>
-          </label>
-          <label class="field"><span>Output format</span>
-            <select id="format-select">
-              <option value="auto">Infer automatically</option>
-              <option value="markdown">Markdown</option>
-              <option value="json">JSON</option>
-              <option value="code">Code</option>
-              <option value="table">Table</option>
-              <option value="prose">Prose</option>
-              <option value="image">Image prompt</option>
-            </select>
-          </label>
-          <label class="field"><span>Audience (optional)</span><input id="audience-input" type="text" autocomplete="off"></label>
-          <label class="field full-width"><span>Deliverable override (optional)</span><input id="deliverable-input" type="text" autocomplete="off" placeholder="Example: Return a prioritized implementation plan with acceptance criteria."></label>
-          <label class="toggle-row full-width"><input id="verify-checkbox" type="checkbox"><span>Include a lightweight verification contract</span></label>
+        <section class="settings-section">
+          <div class="settings-heading"><h3>Compilation defaults</h3><p>These values shape the contract without replacing the user’s objective.</p></div>
+          <div class="settings-grid">
+            <label class="field"><span>Persona</span>
+              <select id="persona-select">
+                <option value="none">No forced persona</option>
+                <option value="general">General specialist</option>
+                <option value="software">Software engineer</option>
+                <option value="research">Research analyst</option>
+                <option value="creative">Creative director</option>
+                <option value="security">Security reviewer</option>
+              </select>
+            </label>
+            <label class="field"><span>Tone</span>
+              <select id="tone-select">
+                <option value="neutral">Neutral</option>
+                <option value="direct">Direct</option>
+                <option value="analytical">Analytical</option>
+                <option value="creative">Creative</option>
+                <option value="formal">Formal</option>
+              </select>
+            </label>
+            <label class="field"><span>Output format</span>
+              <select id="format-select">
+                <option value="auto">Infer automatically</option>
+                <option value="markdown">Markdown</option>
+                <option value="json">JSON</option>
+                <option value="code">Code</option>
+                <option value="table">Table</option>
+                <option value="prose">Prose</option>
+                <option value="image">Image prompt</option>
+              </select>
+            </label>
+            <label class="field"><span>Audience (optional)</span><input id="audience-input" type="text" autocomplete="off"></label>
+            <label class="field full-width"><span>Deliverable override (optional)</span><input id="deliverable-input" type="text" autocomplete="off" placeholder="Example: Return a prioritized implementation plan with acceptance criteria."></label>
+            <label class="toggle-row full-width"><input id="verify-checkbox" type="checkbox"><span>Include a lightweight verification contract</span></label>
+          </div>
         </section>
       </div>
 
