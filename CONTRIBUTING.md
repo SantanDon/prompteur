@@ -35,7 +35,7 @@ No dependency installation is currently required.
 
 ## Prompt behavior changes
 
-Changes to normalization, linting, or compilation must include a representative case in `evaluations/cases.json` or a focused test under `tests/`.
+Changes to normalization, linting, compilation, pipeline validation, CLI behavior, or the local bridge must include a representative case in `evaluations/cases.json` or a focused test under `tests/`.
 
 A strong case records:
 
@@ -64,7 +64,9 @@ Keep pull requests narrow. Include:
 
 - Preserve the deterministic offline path.
 - Keep DOM concerns out of `src/core`.
-- Keep provider calls behind `server.js`.
+- Route every deterministic surface through `src/core/pipeline.js`.
+- Keep compilation separate from execution and provider calls behind `server.js`.
+- Keep the HTTP bridge loopback-only and do not add permissive CORS.
 - Do not persist secrets.
 - Prefer stable issue IDs and semantic checks.
 - Do not add generic prompt wording without a defined failure mode.
