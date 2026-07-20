@@ -14,13 +14,15 @@ Updated: 2026-07-20
 - Added pipeline, CLI, API, validation, and security regression tests.
 - Added the integration guide and ADR 0002.
 - Reordered the roadmap around Zero Copy-Paste, MCP, extension, direct execution, evaluation, and adaptive optimization.
+- Rebuilt the browser as a restrained compiler workbench with explicit hierarchy, accessible tabs, integrated contract signals, and 320 px containment rules.
+- Added `docs/DESIGN_SYSTEM.md`, `docs/DESIGN_TOOLING.md`, ADR 0003, a Figma/Playwright MCP example, and the `prompteur-frontend-design` Agent Skill.
 
 ## Verification target
 
 - Syntax checks for server, browser, pipeline, and CLI.
 - Node test suite including CLI subprocess and HTTP bridge tests.
 - Six deterministic evaluation cases through the shared pipeline.
-- Desktop/mobile browser smoke tests.
+- Desktop/tablet/390 px/320 px browser smoke tests, including overflow, keyboard tabs, dialog flow, and long content.
 - Static subpath/GitHub Pages module loading.
 
 ## Security state
@@ -34,4 +36,4 @@ Updated: 2026-07-20
 
 ## Next priority
 
-Build the MCP adapter as the first direct agent integration, then design authenticated browser-extension communication.
+Create the canonical Figma frame/component map when a design URL is available, then build the MCP adapter as the first direct agent integration, then design authenticated browser-extension communication.
