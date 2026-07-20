@@ -1,34 +1,39 @@
+
 # Agent implementation plan
 
-Updated: 2026-07-17
+Updated: 2026-07-20
 Workspace: repository root
 Target agent: any repository maintenance agent
 
 ## Goal
 
-Maintain Prompteur as a local-first prompt compiler, linter, and evaluation workbench.
+Evolve Prompteur from a browser prompt workbench into a universal local-first intent compiler and agent integration layer.
 
 ## Current state
 
-- v0.2 is implemented around Prompt IR, deterministic analysis, target compilation, optional Ollama/Gemini candidates, a secure local server, and a responsive browser UI.
+- v0.2 established Prompt IR, deterministic diagnostics, target compilation, optional provider candidates, secure serving, and evaluation cases.
+- v0.3 Zero Copy-Paste foundation is implemented around one `compileRequest` pipeline.
+- Browser, CLI, JavaScript exports, loopback HTTP bridge, and deterministic evaluations share the same versioned result contract.
 - The public repository is `SantanDon/prompteur` on `main`.
-- Baseline commits: `1fcae21` and `5b3cc42`.
 
 ## Evidence
 
-- `npm run check` passes.
-- Node tests: 7/7 pass.
-- Deterministic evaluation cases: 6/6 pass.
-- Desktop 1440×1000 and mobile 390×844 Playwright smoke flows pass with no console errors or horizontal overflow.
-- Settings Cancel preserves the saved provider; provider cards are keyboard focusable; diagnostics and Prompt IR render.
-- Credential-shaped value scan and binary/archive/key inventory are clean.
+Verification required for every substantial change:
+
+- `npm run check`.
+- CLI text, stdin, invalid-option, and JSON flows.
+- `/api/health`, `/api/capabilities`, `/api/compile`, and static allowlist tests.
+- Desktop and mobile browser smoke flows when browser code or served module paths change.
+- GitHub Pages smoke test when static browser modules change.
 
 ## Decisions
 
 - Prompt quality means a minimal sufficient, target-aware, testable task contract—not a longer prompt.
-- Deterministic local compilation is the baseline; model rewrites are untrusted candidates until evaluated.
-- Runtime dependencies require an ADR and evidence.
-- Static files are allowlisted; Ollama is localhost-only; Gemini keys are never persisted.
+- `src/core/pipeline.js` is the deterministic product boundary.
+- Every surface calls the shared pipeline; none reconstructs normalization, analysis, and compilation independently.
+- The HTTP bridge is loopback-only and emits no permissive CORS.
+- Compilation cannot execute commands or invoke providers.
+- Model rewrites remain candidates until evaluated.
 
 ## Required context
 
@@ -36,32 +41,30 @@ Read before substantial changes:
 
 - `AGENTS.md`
 - `docs/PRODUCT_PHILOSOPHY.md`
+- `docs/INTEGRATIONS.md`
 - `docs/ARCHITECTURE.md`
 - `docs/RESEARCH.md`
 - `docs/ROADMAP.md`
 - `docs/MAINTAINER_LOOP.md`
 - `docs/decisions/0001-prompt-ir-and-deterministic-core.md`
-
-Begin prompt-behavior changes with a representative case in `evaluations/cases.json`.
-
-## External blocker
-
-GitHub Actions is configured, but the hosted job did not start because of an account-level GitHub restriction. Run `29598964011` executed zero workflow steps. Re-run CI after the account restriction is resolved; do not classify the current red run as a code failure.
+- `docs/decisions/0002-shared-pipeline-cli-and-local-bridge.md`
 
 ## Next highest-value action
 
-Implement v0.3 comparison and evaluation:
+Implement a local MCP adapter around `compileRequest` and `getCompilerCapabilities` without adding provider or execution behavior to the deterministic core.
 
-1. Show original, deterministic baseline, and model candidate side by side.
-2. Add semantic diff by Prompt IR field.
-3. Add accept, reject, and restore-baseline behavior.
-4. Define the model-backed evaluation-result schema.
-5. Add an optional Promptfoo export adapter.
+Follow with:
+
+1. authenticated browser-extension bridge design,
+2. compile-before-send extension prototype,
+3. direct adapter for one coding agent with explicit permissions,
+4. original/baseline/candidate comparison and evaluation evidence.
 
 ## Implementation contract
 
-- Work in small, reviewable steps.
-- Preserve existing product and security invariants.
-- Run focused verification before handoff.
-- Update `agent-status.md`, `decisions.md`, and `open-questions.md` when relevant.
-- Do not commit generated session logs, execution logs, or implementation diffs.
+- Begin prompt-behavior changes with a representative evaluation case.
+- Keep changes reviewable and reversible.
+- Preserve loopback, secret, static-file, and execution boundaries.
+- Run focused and end-to-end verification.
+- Update `agent-status.md`, `decisions.md`, and `open-questions.md`.
+- Do not commit generated execution logs or implementation diffs.
