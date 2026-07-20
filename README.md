@@ -1,23 +1,36 @@
+
 # Prompteur
 
-**A local-first prompt compiler, linter, and evaluation workbench.**
+**A local-first intent compiler and integration bridge for AI models and agents.**
 
-Prompteur turns rough intent into an inspectable task contract. It diagnoses ambiguity and unsafe instruction boundaries, compiles a deterministic prompt for the selected target, and can optionally ask Ollama or Gemini to generate a separate candidate.
-
-It is built around one principle:
+Prompteur turns rough human intent into a structured, target-aware, testable task contract. It diagnoses ambiguity and unsafe instruction boundaries, compiles a deterministic prompt, and exposes that same result through a browser workbench, CLI, JavaScript API, and loopback HTTP bridge.
 
 > Better prompts are not necessarily longer. They are clearer, appropriately constrained, target-aware, and testable.
 
-## Current capabilities
+## Zero Copy-Paste
 
-- **Prompt IR** — separates objective, context, constraints, audience, output, verification, and target behavior.
-- **Deterministic linting** — flags vague objectives, implicit context, missing output contracts, conflicts, prompt injection, persona bloat, and other defined failure modes.
-- **Target compilers** — general model, coding/tool agent, research model, and image model.
-- **Inspectable results** — compiled prompt, diagnostics, readiness dimensions, and serialized IR.
-- **Optional candidates** — local Ollama or Gemini model-assisted rewrites, clearly distinguished from the deterministic baseline.
-- **Local-first security** — no model required, Gemini keys are not persisted, Ollama is restricted to localhost, and the server exposes only approved application files.
-- **Regression cases** — deterministic prompt behavior is checked in tests and an evaluation-case runner.
-- **Agent-maintained repository** — explicit architecture, product invariants, ADRs, and maintainer workflow.
+Prompteur is no longer limited to a website workflow. Version `0.3` introduces one shared compilation pipeline that can be called directly from shells, scripts, agents, and local tools.
+
+```text
+human intent
+   ↓
+shared Prompteur pipeline
+   ├── browser workbench
+   ├── CLI / stdin / files
+   ├── JavaScript API
+   ├── local HTTP bridge
+   └── deterministic evaluation runner
+```
+
+The next integration surfaces—MCP, browser extension, IDE actions, and direct agent execution—will wrap this same pipeline rather than reimplementing prompt behavior.
+
+## Try the browser workbench
+
+Public deterministic demo:
+
+- https://santandon.github.io/prompteur/
+
+The GitHub Pages demo performs local deterministic compilation in the browser. Optional provider calls and the HTTP bridge require the local Node server.
 
 ## Quick start
 
@@ -25,7 +38,7 @@ Requirements:
 
 - Node.js 22 or newer.
 
-Run:
+Run the local workbench and bridge:
 
 ```bash
 npm start
@@ -37,9 +50,97 @@ Open:
 http://127.0.0.1:3030
 ```
 
-The local compiler works immediately without installing dependencies, running a model, or configuring an API key.
+No dependency installation, model, database, or API key is required for deterministic compilation.
 
-> Do not double-click `index.html` to run the application. Browsers restrict JavaScript modules loaded from `file://` URLs. Direct opening now keeps the intended styling and shows a setup notice, but the interactive application should be opened through `npm start` or the hosted demo.
+> Do not double-click `index.html` to run the interactive application. Browsers restrict JavaScript modules loaded from `file://` URLs. Use `npm start` or the hosted demo.
+
+## CLI
+
+Use the CLI directly from the repository:
+
+```bash
+node bin/prompteur.js --target agent "Review this repository and fix the failing tests."
+```
+
+Create a reusable local command:
+
+```bash
+npm link
+prompteur --version
+```
+
+Compile from text, a file, or stdin:
+
+```bash
+prompteur --target agent "Improve authentication and verify the result."
+prompteur --file user_task.md --target agent > compiled-task.md
+echo "Research local AI evaluation tools" | prompteur --target research
+```
+
+Return the full machine-readable result for another tool or agent:
+
+```bash
+prompteur --target research --json "Compare prompt evaluation methods."
+```
+
+Inspect weaknesses without printing the compiled prompt:
+
+```bash
+prompteur analyze "Fix this"
+```
+
+Run `prompteur --help` for the complete command contract.
+
+## Local HTTP bridge
+
+Start `npm start`, then call:
+
+```bash
+curl -s http://127.0.0.1:3030/api/compile \
+  -H "Content-Type: application/json" \
+  -d '{"input":"Review this repository and fix the failing tests.","options":{"target":"agent","outputFormat":"code"}}'
+```
+
+Capabilities:
+
+```text
+GET http://127.0.0.1:3030/api/capabilities
+```
+
+OpenAPI contract:
+
+```text
+http://127.0.0.1:3030/openapi.json
+```
+
+The API accepts loopback clients only and intentionally sends no permissive CORS headers. See [`docs/INTEGRATIONS.md`](docs/INTEGRATIONS.md).
+
+## JavaScript API
+
+```js
+import { compileRequest } from 'prompteur';
+
+const result = compileRequest('Investigate the failing tests.', {
+  target: 'agent',
+  tone: 'direct',
+  outputFormat: 'code',
+});
+
+console.log(result.prompt);
+```
+
+## Current capabilities
+
+- **Shared compilation pipeline** — one versioned result contract across every product surface.
+- **Prompt IR** — separates objective, context, constraints, audience, output, verification, and target behavior.
+- **Deterministic linting** — flags vague objectives, implicit context, missing output contracts, conflicts, prompt injection, persona bloat, and other defined failure modes.
+- **Target compilers** — general model, coding/tool agent, research model, and image model.
+- **CLI and HTTP bridge** — text, stdin, files, JSON output, capabilities discovery, and OpenAPI.
+- **Inspectable browser results** — compiled prompt, diagnostics, readiness dimensions, and serialized IR.
+- **Optional candidates** — local Ollama or Gemini model-assisted rewrites, clearly distinguished from the deterministic baseline.
+- **Local-first security** — no model required, Gemini keys are not persisted, Ollama is restricted to localhost, API clients must be loopback, and the server exposes only approved files.
+- **Regression cases** — deterministic prompt behavior is checked in tests and an evaluation-case runner.
+- **Agent-maintained repository** — explicit architecture, product invariants, ADRs, and maintainer workflow.
 
 ## Optional model providers
 
@@ -51,7 +152,7 @@ The local compiler works immediately without installing dependencies, running a 
 4. Select **Ollama candidate**.
 5. Set the localhost URL and model name.
 
-Remote Ollama hosts are intentionally rejected by the server in the current architecture.
+Remote Ollama hosts are intentionally rejected.
 
 ### Gemini
 
@@ -59,26 +160,12 @@ Set `GEMINI_API_KEY` in the server environment, or enter a key in the settings d
 
 Optional defaults are listed in `config.example.env`.
 
-## How it works
-
-```text
-rough request
-   ↓
-Prompt IR
-   ├── deterministic linter → diagnostics + readiness dimensions
-   ├── target compiler → local baseline
-   └── optional provider → model candidate
-                              ↓
-                        future eval loop
-```
-
-The model candidate is not automatically described as better. The roadmap adds comparative execution, grading, versioning, and prompt selection based on evidence.
-
 ## Commands
 
 ```bash
-npm start      # run the local application
-npm test       # unit and server tests
+npm start      # local workbench and loopback bridge
+npm run compile -- "Your request"  # invoke the CLI through npm
+npm test       # unit, CLI, pipeline, and server tests
 npm run eval   # deterministic prompt regression cases
 npm run check  # syntax, tests, and evaluations
 ```
@@ -86,15 +173,18 @@ npm run check  # syntax, tests, and evaluations
 ## Repository map
 
 ```text
-src/core/          Prompt IR, lint rules, and target compiler
-src/providers/     Browser client for optional providers
-src/app.js         Browser interaction and state
-evaluations/       Representative prompt regression cases
-scripts/           Evaluation runner
-tests/             Core and server tests
-docs/              Philosophy, architecture, research, roadmap, ADRs
-server.js           Secure local server and provider proxy
-AGENTS.md           Rules for agent maintainers
+bin/prompteur.js     Composable CLI
+src/core/pipeline.js Shared deterministic product pipeline
+src/core/            Prompt IR, lint rules, catalogs, compiler, versions
+src/providers/       Browser client for optional providers
+src/app.js           Browser interaction and state
+openapi.json         Local bridge contract
+evaluations/         Representative prompt regression cases
+scripts/             Evaluation runner
+tests/               Core, pipeline, CLI, server, and security tests
+docs/                Philosophy, integrations, architecture, roadmap, ADRs
+server.js             Secure static server, local bridge, provider proxy
+AGENTS.md             Rules for agent maintainers
 ```
 
 ## Design philosophy
@@ -106,11 +196,13 @@ Prompteur deliberately avoids:
 - prestige personas as a substitute for task detail,
 - hidden optimizer decisions,
 - storing secrets in browser storage,
+- exposing an unauthenticated bridge to arbitrary web pages,
 - claiming a rewrite is improved without evaluation evidence.
 
 Read:
 
 - [`docs/PRODUCT_PHILOSOPHY.md`](docs/PRODUCT_PHILOSOPHY.md)
+- [`docs/INTEGRATIONS.md`](docs/INTEGRATIONS.md)
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
 - [`docs/RESEARCH.md`](docs/RESEARCH.md)
 - [`docs/ROADMAP.md`](docs/ROADMAP.md)
@@ -118,7 +210,7 @@ Read:
 
 ## Project status
 
-Prompteur is an early but functional `0.2` foundation. Deterministic diagnosis and compilation are implemented and tested. Comparative model execution, prompt versioning, human preference capture, and automatic optimization loops remain roadmap work.
+Prompteur `0.3` is the first Zero Copy-Paste foundation. Deterministic compilation is reusable from the browser, CLI, JavaScript, local HTTP, and evaluation runner. MCP, browser extension, direct agent execution, comparative evaluation, and project memory remain roadmap work.
 
 The readiness score is a transparent contract heuristic. It is not a scientific measure of factual accuracy, model intelligence, or downstream benchmark performance.
 
