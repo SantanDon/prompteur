@@ -1,6 +1,5 @@
-import { buildPromptIR } from './core/normalize.js';
-import { analyzePrompt } from './core/analyze.js';
-import { buildOptimizerInput, buildOptimizerSystemPrompt, compilePrompt } from './core/compile.js';
+import { buildOptimizerInput, buildOptimizerSystemPrompt } from './core/compile.js';
+import { compileRequest } from './core/pipeline.js';
 import { checkProvider, requestCandidate } from './providers/client.js';
 
 const STORAGE_KEY = 'prompteur.config.v2';
@@ -225,7 +224,7 @@ function compileCurrentPrompt() {
     return null;
   }
 
-  const ir = buildPromptIR(input, {
+  const result = compileRequest(input, {
     target: config.target,
     persona: config.persona,
     tone: config.tone,
@@ -234,12 +233,11 @@ function compileCurrentPrompt() {
     deliverable: config.deliverable,
     verify: config.verify,
   });
-  const analysis = analyzePrompt(ir);
-  const baseline = compilePrompt(ir);
+  const { ir, analysis, prompt: baseline } = result;
 
-  lastRun = { ir, analysis, baseline, current: baseline };
+  lastRun = { ...result, baseline, current: baseline };
   elements.compiledOutput.textContent = baseline;
-  elements.irOutput.textContent = JSON.stringify({ prompt: ir, analysis }, null, 2);
+  elements.irOutput.textContent = JSON.stringify({ engine: result.engine, ir, analysis, provenance: result.provenance }, null, 2);
   elements.resultTitle.textContent = 'Compiled prompt';
   elements.resultOrigin.textContent = 'Deterministic local compiler';
   elements.copy.disabled = false;
