@@ -1,7 +1,6 @@
+
 import { readFile } from 'node:fs/promises';
-import { buildPromptIR } from '../src/core/normalize.js';
-import { analyzePrompt } from '../src/core/analyze.js';
-import { compilePrompt } from '../src/core/compile.js';
+import { compileRequest } from '../src/core/pipeline.js';
 
 const cases = JSON.parse(await readFile(new URL('../evaluations/cases.json', import.meta.url), 'utf8'));
 const results = [];
@@ -11,9 +10,8 @@ function includesCaseInsensitive(value, fragment) {
 }
 
 for (const testCase of cases) {
-  const ir = buildPromptIR(testCase.input, testCase.options);
-  const analysis = analyzePrompt(ir);
-  const output = compilePrompt(ir);
+  const compiled = compileRequest(testCase.input, testCase.options);
+  const { analysis, prompt: output } = compiled;
   const issueIds = new Set(analysis.issues.map((item) => item.id));
   const failures = [];
 
@@ -34,6 +32,7 @@ for (const testCase of cases) {
     passed: failures.length === 0,
     readiness: analysis.readiness,
     issues: analysis.issues.map((item) => item.id),
+    engineVersion: compiled.engine.version,
     failures,
   });
 }
@@ -43,7 +42,7 @@ const failed = results.length - passed;
 
 for (const result of results) {
   const symbol = result.passed ? 'PASS' : 'FAIL';
-  console.log(`${symbol} ${result.id} · readiness ${result.readiness} · issues ${result.issues.join(', ') || 'none'}`);
+  console.log(`${symbol} ${result.id} · engine ${result.engineVersion} · readiness ${result.readiness} · issues ${result.issues.join(', ') || 'none'}`);
   for (const failure of result.failures) console.log(`  - ${failure}`);
 }
 
