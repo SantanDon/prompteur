@@ -12,3 +12,9 @@
 - Model rewrites are candidates and require comparative evidence before being called improved.
 - Runtime dependencies require a capability gap, maintenance assessment, tests, and an ADR.
 - Prompt behavior changes begin with representative evaluation cases.
+
+- The browser is a restrained compiler workbench, not a generic AI dashboard or marketing hero.
+- Gradients, glassmorphism, glow, card soup, and icon-only primary actions are prohibited defaults.
+- Figma remote MCP is preferred for structured design context; Playwright is required for browser evidence.
+- Storybook and frontend-framework adoption remain deferred until an ADR proves a real component-system need.
+- The project-specific UI workflow lives in `.agents/skills/prompteur-frontend-design/`.
