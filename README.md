@@ -136,6 +136,7 @@ console.log(result.prompt);
 - **Deterministic linting** — flags vague objectives, implicit context, missing output contracts, conflicts, prompt injection, persona bloat, and other defined failure modes.
 - **Target compilers** — general model, coding/tool agent, research model, and image model.
 - **CLI and HTTP bridge** — text, stdin, files, JSON output, capabilities discovery, and OpenAPI.
+- **Authored browser workbench** — a responsive source-to-contract interface with accessible tabs, integrated contract signals, and explicit provider state.
 - **Inspectable browser results** — compiled prompt, diagnostics, readiness dimensions, and serialized IR.
 - **Optional candidates** — local Ollama or Gemini model-assisted rewrites, clearly distinguished from the deterministic baseline.
 - **Local-first security** — no model required, Gemini keys are not persisted, Ollama is restricted to localhost, API clients must be loopback, and the server exposes only approved files.
@@ -177,12 +178,14 @@ bin/prompteur.js     Composable CLI
 src/core/pipeline.js Shared deterministic product pipeline
 src/core/            Prompt IR, lint rules, catalogs, compiler, versions
 src/providers/       Browser client for optional providers
-src/app.js           Browser interaction and state
+src/app.js           Browser interaction and accessible state
+style.css             Prompteur visual system and responsive layout
+.agents/skills/       Project-specific agent workflows
 openapi.json         Local bridge contract
 evaluations/         Representative prompt regression cases
 scripts/             Evaluation runner
 tests/               Core, pipeline, CLI, server, and security tests
-docs/                Philosophy, integrations, architecture, roadmap, ADRs
+docs/                Product, design, integrations, architecture, roadmap, ADRs
 server.js             Secure static server, local bridge, provider proxy
 AGENTS.md             Rules for agent maintainers
 ```
@@ -197,12 +200,15 @@ Prompteur deliberately avoids:
 - hidden optimizer decisions,
 - storing secrets in browser storage,
 - exposing an unauthenticated bridge to arbitrary web pages,
-- claiming a rewrite is improved without evaluation evidence.
+- claiming a rewrite is improved without evaluation evidence,
+- generic AI gradients, glass panels, glow, card soup, and icon-only primary controls.
 
 Read:
 
 - [`docs/PRODUCT_PHILOSOPHY.md`](docs/PRODUCT_PHILOSOPHY.md)
 - [`docs/INTEGRATIONS.md`](docs/INTEGRATIONS.md)
+- [`docs/DESIGN_SYSTEM.md`](docs/DESIGN_SYSTEM.md)
+- [`docs/DESIGN_TOOLING.md`](docs/DESIGN_TOOLING.md)
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
 - [`docs/RESEARCH.md`](docs/RESEARCH.md)
 - [`docs/ROADMAP.md`](docs/ROADMAP.md)
