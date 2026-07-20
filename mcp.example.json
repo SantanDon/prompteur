@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "figma": {
+      "url": "https://mcp.figma.com/mcp"
+    },
+    "playwright": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@playwright/mcp@latest",
+        "--isolated",
+        "--headless",
+        "--allowed-hosts",
+        "127.0.0.1,localhost,santandon.github.io"
+      ]
+    }
+  }
+}
