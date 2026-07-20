@@ -1,37 +1,37 @@
+
 # Agent status
 
-Updated: 2026-07-17
+Updated: 2026-07-20
 
 ## Completed
 
-- Reframed Prompteur as a local-first prompt compiler, linter, and evaluation workbench.
-- Replaced the monolithic prototype with Prompt IR, deterministic diagnostics, target compilers, optional provider candidates, and a secure allowlisted server.
-- Redesigned and browser-tested the desktop and mobile interface.
-- Added 7 Node tests and 6 deterministic evaluation cases.
-- Added product, architecture, research, roadmap, security, contribution, ADR, and agent-maintainer documentation.
-- Published the public repository at `SantanDon/prompteur`.
-- Enabled issue templates, CODEOWNERS, labels, topics, and private vulnerability reporting.
+- Reframed Prompteur as a local-first intent compiler rather than a website-only prompt improver.
+- Added the shared `compileRequest` pipeline with versioned result contract, provenance, catalog validation, input limits, and stable errors.
+- Routed the browser and deterministic evaluation runner through the shared pipeline.
+- Added a dependency-free CLI supporting text, files, stdin, diagnostics, and complete JSON output.
+- Added loopback-only `/api/compile` and `/api/capabilities` endpoints.
+- Added JavaScript package exports and an OpenAPI contract.
+- Added pipeline, CLI, API, validation, and security regression tests.
+- Added the integration guide and ADR 0002.
+- Reordered the roadmap around Zero Copy-Paste, MCP, extension, direct execution, evaluation, and adaptive optimization.
 
-## Verification
+## Verification target
 
-- `npm run check`: pass.
-- Node tests: 7/7 pass.
-- Deterministic evaluation cases: 6/6 pass.
-- Playwright desktop 1440×1000: pass, no console errors or horizontal overflow.
-- Playwright mobile 390×844: pass, no console errors or horizontal overflow.
-- Credential-shaped value scan: clean.
-- Binary/archive/key inventory: clean.
+- Syntax checks for server, browser, pipeline, and CLI.
+- Node test suite including CLI subprocess and HTTP bridge tests.
+- Six deterministic evaluation cases through the shared pipeline.
+- Desktop/mobile browser smoke tests.
+- Static subpath/GitHub Pages module loading.
 
-## External blocker
+## Security state
 
-GitHub Actions is configured, but the hosted job did not start because of an account-level GitHub restriction. Run `29598964011` executed zero workflow steps. Re-run CI after the account restriction is resolved; do not treat the current red run as a code failure.
+- API routes accept loopback clients only.
+- No permissive CORS.
+- Compile endpoint cannot invoke providers or commands.
+- Gemini keys remain memory-only in the browser.
+- Ollama remains localhost-only.
+- Static server remains allowlisted.
 
 ## Next priority
 
-Implement v0.3 comparison and evaluation:
-
-1. Preserve original, deterministic baseline, and model candidate side by side.
-2. Add semantic diff by Prompt IR field.
-3. Add accept/reject/restore behavior.
-4. Define the model-backed evaluation result schema.
-5. Add an optional Promptfoo export adapter.
+Build the MCP adapter as the first direct agent integration, then design authenticated browser-extension communication.
