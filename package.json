@@ -41,6 +41,10 @@
     "openapi.json",
     "docs/INTEGRATIONS.md",
     "config.example.env",
+    "docs/DESIGN_SYSTEM.md",
+    "docs/DESIGN_TOOLING.md",
+    ".agents/skills/prompteur-frontend-design/",
+    "mcp.example.json",
     "README.md",
     "LICENSE"
   ]
