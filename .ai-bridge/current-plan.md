@@ -13,6 +13,7 @@ Evolve Prompteur from a browser prompt workbench into a universal local-first in
 
 - v0.2 established Prompt IR, deterministic diagnostics, target compilation, optional provider candidates, secure serving, and evaluation cases.
 - v0.3 Zero Copy-Paste foundation is implemented around one `compileRequest` pipeline.
+- The browser has an authored compiler-workbench design system, responsive containment tests, and a project frontend-design Agent Skill.
 - Browser, CLI, JavaScript exports, loopback HTTP bridge, and deterministic evaluations share the same versioned result contract.
 - The public repository is `SantanDon/prompteur` on `main`.
 
@@ -42,6 +43,9 @@ Read before substantial changes:
 - `AGENTS.md`
 - `docs/PRODUCT_PHILOSOPHY.md`
 - `docs/INTEGRATIONS.md`
+- `docs/DESIGN_SYSTEM.md`
+- `docs/DESIGN_TOOLING.md`
+- `.agents/skills/prompteur-frontend-design/SKILL.md`
 - `docs/ARCHITECTURE.md`
 - `docs/RESEARCH.md`
 - `docs/ROADMAP.md`
@@ -51,7 +55,7 @@ Read before substantial changes:
 
 ## Next highest-value action
 
-Implement a local MCP adapter around `compileRequest` and `getCompilerCapabilities` without adding provider or execution behavior to the deterministic core.
+Create a canonical Figma file/component map for the shipped workbench when a design URL is available, then implement a local MCP adapter around `compileRequest` and `getCompilerCapabilities` without adding provider or execution behavior to the deterministic core.
 
 Follow with:
 
