@@ -30,7 +30,7 @@ test('server exposes the app, versioned health, capabilities, and OpenAPI contra
     const home = await fetch(`${baseUrl}/`);
     assert.equal(home.status, 200);
     const html = await home.text();
-    assert.match(html, /Make prompts more precise/);
+    assert.match(html, /Compile rough instructions into a usable task contract/);
     assert.match(html, /href="\.\/style\.css"/);
     assert.match(html, /src="\.\/src\/bootstrap\.js"/);
 
