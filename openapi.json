@@ -1,0 +1,246 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Prompteur Local Bridge API",
+    "version": "0.3.0",
+    "description": "Loopback-only deterministic prompt compilation API. No model or API key is required."
+  },
+  "servers": [
+    {
+      "url": "http://127.0.0.1:3030"
+    }
+  ],
+  "paths": {
+    "/api/health": {
+      "get": {
+        "summary": "Check the local bridge",
+        "responses": {
+          "200": {
+            "description": "Bridge health",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Health"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/capabilities": {
+      "get": {
+        "summary": "List compiler targets and integration surfaces",
+        "responses": {
+          "200": {
+            "description": "Compiler capabilities",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/compile": {
+      "post": {
+        "summary": "Compile intent into a deterministic task contract",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompileRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Compiled prompt result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompileResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input or options",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The bridge only accepts loopback clients",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Local rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Health": {
+        "type": "object",
+        "required": [
+          "ok",
+          "service",
+          "version"
+        ],
+        "properties": {
+          "ok": {
+            "type": "boolean"
+          },
+          "service": {
+            "const": "prompteur"
+          },
+          "version": {
+            "type": "string"
+          }
+        }
+      },
+      "CompilerOptions": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "target": {
+            "enum": [
+              "general",
+              "agent",
+              "research",
+              "image"
+            ]
+          },
+          "persona": {
+            "enum": [
+              "none",
+              "general",
+              "software",
+              "research",
+              "creative",
+              "security"
+            ]
+          },
+          "tone": {
+            "enum": [
+              "neutral",
+              "direct",
+              "analytical",
+              "creative",
+              "formal"
+            ]
+          },
+          "outputFormat": {
+            "enum": [
+              "auto",
+              "markdown",
+              "json",
+              "code",
+              "table",
+              "prose",
+              "image"
+            ]
+          },
+          "audience": {
+            "type": "string",
+            "maxLength": 4000
+          },
+          "deliverable": {
+            "type": "string",
+            "maxLength": 4000
+          },
+          "verify": {
+            "type": "boolean"
+          }
+        }
+      },
+      "CompileRequest": {
+        "type": "object",
+        "required": [
+          "input"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "input": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80000
+          },
+          "options": {
+            "$ref": "#/components/schemas/CompilerOptions"
+          }
+        }
+      },
+      "CompileResult": {
+        "type": "object",
+        "required": [
+          "schemaVersion",
+          "engine",
+          "prompt",
+          "ir",
+          "analysis",
+          "provenance"
+        ],
+        "properties": {
+          "schemaVersion": {
+            "type": "string"
+          },
+          "engine": {
+            "type": "object"
+          },
+          "prompt": {
+            "type": "string"
+          },
+          "ir": {
+            "type": "object"
+          },
+          "analysis": {
+            "type": "object"
+          },
+          "provenance": {
+            "type": "object"
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}
