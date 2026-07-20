@@ -1,11 +1,14 @@
 # Decisions
 
-- Prompt quality is defined as a minimal sufficient, target-aware, testable task contract.
+- Prompt quality is a minimal sufficient, target-aware, testable task contract.
 - Prompt IR is the model-neutral source of truth; rendered prompts are compiler outputs.
-- The deterministic local baseline must work without providers or network access.
-- Model rewrites are labeled candidates and require comparative evaluation before acceptance.
-- The readiness score is a transparent contract heuristic, not a model-quality benchmark.
-- Runtime dependencies require a capability gap, security assessment, tests, and an ADR.
-- Gemini keys are memory-only in the browser; Ollama is localhost-only.
-- Static files remain an explicit server allowlist.
+- `compileRequest` is the shared deterministic product boundary.
+- Browser, CLI, HTTP, JavaScript, and evaluation surfaces must use the same pipeline.
+- Result contracts include engine version, schema version, Prompt IR, analysis, prompt, and provenance.
+- Deterministic compilation works without providers or network access.
+- Compilation and execution remain separate trust boundaries.
+- The local bridge accepts loopback clients only and does not allow unrelated web origins.
+- Unknown compiler options are rejected rather than silently ignored.
+- Model rewrites are candidates and require comparative evidence before being called improved.
+- Runtime dependencies require a capability gap, maintenance assessment, tests, and an ADR.
 - Prompt behavior changes begin with representative evaluation cases.
