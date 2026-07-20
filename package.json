@@ -1,7 +1,7 @@
 {
   "name": "prompteur",
-  "version": "0.2.0",
-  "description": "A local-first prompt compiler, linter, and evaluation workbench.",
+  "version": "0.3.0",
+  "description": "A local-first intent compiler, linter, and integration bridge for AI models and agents.",
   "type": "module",
   "private": false,
   "license": "MIT",
@@ -12,15 +12,36 @@
   "bugs": {
     "url": "https://github.com/SantanDon/prompteur/issues"
   },
-  "homepage": "https://github.com/SantanDon/prompteur#readme",
+  "homepage": "https://santandon.github.io/prompteur/",
   "engines": {
     "node": ">=22"
   },
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
+    "compile": "node bin/prompteur.js compile",
     "test": "node --test",
     "eval": "node scripts/evaluate.js",
-    "check": "node --check server.js && node --check src/bootstrap.js && node --check src/app.js && node --test && node scripts/evaluate.js"
-  }
+    "check": "node --check server.js && node --check bin/prompteur.js && node --check src/bootstrap.js && node --check src/app.js && node --check src/core/pipeline.js && node --test && node scripts/evaluate.js"
+  },
+  "bin": {
+    "prompteur": "./bin/prompteur.js"
+  },
+  "exports": {
+    ".": "./src/core/pipeline.js",
+    "./pipeline": "./src/core/pipeline.js",
+    "./version": "./src/core/version.js"
+  },
+  "files": [
+    "bin/",
+    "src/",
+    "server.js",
+    "index.html",
+    "style.css",
+    "openapi.json",
+    "docs/INTEGRATIONS.md",
+    "config.example.env",
+    "README.md",
+    "LICENSE"
+  ]
 }
