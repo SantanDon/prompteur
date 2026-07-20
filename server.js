@@ -2,6 +2,8 @@ import http from 'node:http';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { compileRequest, getCompilerCapabilities } from './src/core/pipeline.js';
+import { PROMPTEUR_VERSION } from './src/core/version.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -21,10 +23,21 @@ const STATIC_ROUTES = new Map([
   ['/src/core/normalize.js', ['src/core/normalize.js', 'text/javascript; charset=utf-8']],
   ['/src/core/analyze.js', ['src/core/analyze.js', 'text/javascript; charset=utf-8']],
   ['/src/core/compile.js', ['src/core/compile.js', 'text/javascript; charset=utf-8']],
+  ['/src/core/pipeline.js', ['src/core/pipeline.js', 'text/javascript; charset=utf-8']],
+  ['/src/core/version.js', ['src/core/version.js', 'text/javascript; charset=utf-8']],
+  ['/openapi.json', ['openapi.json', 'application/json; charset=utf-8']],
   ['/src/providers/client.js', ['src/providers/client.js', 'text/javascript; charset=utf-8']],
 ]);
 
 const rateBuckets = new Map();
+
+
+function isLoopbackRequest(req) {
+  const address = req.socket.remoteAddress || '';
+  return address === '127.0.0.1'
+    || address === '::1'
+    || address === '::ffff:127.0.0.1';
+}
 
 function securityHeaders(contentType = 'application/json; charset=utf-8') {
   return {
@@ -226,17 +239,31 @@ export function createAppServer() {
     try {
       const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
 
-      if (req.method === 'GET' && url.pathname === '/api/health') {
-        sendJson(res, 200, { ok: true, service: 'prompteur', version: '0.2.0' });
+      if (url.pathname.startsWith('/api/') && !isLoopbackRequest(req)) {
+        sendJson(res, 403, { error: 'Prompteur API accepts loopback clients only.', code: 'LOOPBACK_ONLY' });
         return;
       }
 
-      if (req.method === 'POST' && ['/api/provider/health', '/api/rewrite'].includes(url.pathname)) {
+      if (req.method === 'GET' && url.pathname === '/api/health') {
+        sendJson(res, 200, { ok: true, service: 'prompteur', version: PROMPTEUR_VERSION });
+        return;
+      }
+
+      if (req.method === 'GET' && url.pathname === '/api/capabilities') {
+        sendJson(res, 200, getCompilerCapabilities());
+        return;
+      }
+
+      if (req.method === 'POST' && ['/api/compile', '/api/provider/health', '/api/rewrite'].includes(url.pathname)) {
         if (isRateLimited(req)) {
           sendJson(res, 429, { error: 'Too many local requests. Try again shortly.' });
           return;
         }
         const body = await readJsonBody(req);
+        if (url.pathname === '/api/compile') {
+          sendJson(res, 200, compileRequest(body.input, body.options));
+          return;
+        }
         if (url.pathname === '/api/provider/health') {
           sendJson(res, 200, await checkProvider(body));
           return;
@@ -259,6 +286,7 @@ export function createAppServer() {
       const status = Number(error.status) || 500;
       sendJson(res, status, {
         error: status === 500 ? 'Request failed safely.' : error.message,
+        ...(error.code ? { code: error.code } : {}),
       });
     }
   });
