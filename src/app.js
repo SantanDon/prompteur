@@ -3,6 +3,13 @@ import { compileRequest } from './core/pipeline.js';
 import { checkProvider, requestCandidate } from './providers/client.js';
 
 const STORAGE_KEY = 'prompteur.config.v2';
+const TARGET_DESCRIPTIONS = {
+  general: 'Balanced contract for a conversational model.',
+  agent: 'Execution boundaries, tool use, and verification for an autonomous agent.',
+  research: 'Source quality, uncertainty, and citation requirements for research.',
+  image: 'Subject, composition, rendering language, and output constraints for an image model.',
+};
+
 const DEFAULT_CONFIG = {
   provider: 'local',
   geminiKey: '',
@@ -21,6 +28,7 @@ const DEFAULT_CONFIG = {
 const elements = {
   rawPrompt: document.querySelector('#raw-prompt'),
   target: document.querySelector('#target-select'),
+  targetDescription: document.querySelector('#target-description'),
   characterCount: document.querySelector('#character-count'),
   compile: document.querySelector('#compile-button'),
   clear: document.querySelector('#clear-button'),
@@ -30,6 +38,7 @@ const elements = {
   irOutput: document.querySelector('#ir-output'),
   resultTitle: document.querySelector('#result-title'),
   resultOrigin: document.querySelector('#result-origin'),
+  resultPane: document.querySelector('#result-pane'),
   scoreBadge: document.querySelector('#score-badge'),
   scoreValue: document.querySelector('#score-value'),
   issueCount: document.querySelector('#issue-count'),
@@ -56,13 +65,10 @@ const elements = {
   deliverable: document.querySelector('#deliverable-input'),
   verify: document.querySelector('#verify-checkbox'),
   toastRegion: document.querySelector('#toast-region'),
-  metrics: {
-    clarity: document.querySelector('#metric-clarity'),
-    context: document.querySelector('#metric-context'),
-    constraints: document.querySelector('#metric-constraints'),
-    output: document.querySelector('#metric-output'),
-    verification: document.querySelector('#metric-verification'),
-  },
+  metrics: Object.fromEntries(['clarity', 'context', 'constraints', 'output', 'verification'].map((name) => [name, {
+    root: document.querySelector(`[data-metric="${name}"]`),
+    value: document.querySelector(`#metric-${name}`),
+  }])),
 };
 
 let config = loadConfig();
@@ -98,6 +104,14 @@ function showToast(message, kind = 'info') {
 function updateCharacterCount() {
   const length = elements.rawPrompt.value.length;
   elements.characterCount.textContent = `${length.toLocaleString()} ${length === 1 ? 'character' : 'characters'}`;
+}
+
+function updateTargetDescription() {
+  elements.targetDescription.textContent = TARGET_DESCRIPTIONS[config.target] || TARGET_DESCRIPTIONS.general;
+}
+
+function shouldReduceMotion() {
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
 
 function openSettings() {
@@ -166,8 +180,13 @@ function renderScore(analysis) {
   elements.scoreValue.textContent = analysis.readiness;
   elements.scoreBadge.classList.remove('good', 'medium', 'low');
   elements.scoreBadge.classList.add(analysis.readiness >= 80 ? 'good' : analysis.readiness >= 55 ? 'medium' : 'low');
+  elements.scoreBadge.setAttribute('aria-label', `Readiness score ${analysis.readiness} out of 100`);
+
   for (const [name, value] of Object.entries(analysis.dimensions)) {
-    elements.metrics[name].textContent = value;
+    const metric = elements.metrics[name];
+    metric.value.textContent = value;
+    metric.root.style.setProperty('--value', `${Math.max(0, Math.min(100, value))}%`);
+    metric.root.setAttribute('aria-valuenow', value);
   }
 }
 
@@ -205,9 +224,13 @@ function renderDiagnostics(analysis) {
   }
 }
 
-function selectTab(name) {
+function selectTab(name, { focus = false } = {}) {
   document.querySelectorAll('.tab-button').forEach((button) => {
-    button.classList.toggle('active', button.dataset.tab === name);
+    const active = button.dataset.tab === name;
+    button.classList.toggle('active', active);
+    button.setAttribute('aria-selected', String(active));
+    button.tabIndex = active ? 0 : -1;
+    if (active && focus) button.focus();
   });
   document.querySelectorAll('.tab-panel').forEach((panel) => {
     const active = panel.dataset.panel === name;
@@ -236,15 +259,19 @@ function compileCurrentPrompt() {
   const { ir, analysis, prompt: baseline } = result;
 
   lastRun = { ...result, baseline, current: baseline };
+  elements.resultPane.dataset.state = 'ready';
   elements.compiledOutput.textContent = baseline;
   elements.irOutput.textContent = JSON.stringify({ engine: result.engine, ir, analysis, provenance: result.provenance }, null, 2);
-  elements.resultTitle.textContent = 'Compiled prompt';
+  elements.resultTitle.textContent = 'Task contract';
   elements.resultOrigin.textContent = 'Deterministic local compiler';
   elements.copy.disabled = false;
   elements.optimize.disabled = config.provider === 'local';
   renderScore(analysis);
   renderDiagnostics(analysis);
   selectTab('prompt');
+  if (window.matchMedia('(max-width: 1040px)').matches) {
+    elements.resultPane.scrollIntoView({ behavior: shouldReduceMotion() ? 'auto' : 'smooth', block: 'start' });
+  }
   return lastRun;
 }
 
@@ -290,11 +317,14 @@ async function optimizeCurrentPrompt() {
 
 async function copyCurrentPrompt() {
   if (!lastRun?.current) return;
+  const originalLabel = elements.copy.textContent;
   try {
     await navigator.clipboard.writeText(lastRun.current);
-    showToast('Prompt copied to clipboard.');
+    elements.copy.textContent = 'Copied';
+    showToast('Task contract copied.');
+    window.setTimeout(() => { elements.copy.textContent = originalLabel; }, 1600);
   } catch {
-    showToast('Clipboard access failed. Select and copy the prompt manually.', 'error');
+    showToast('Clipboard access failed. Select and copy the contract manually.', 'error');
   }
 }
 
@@ -302,17 +332,23 @@ function clearWorkbench() {
   elements.rawPrompt.value = '';
   updateCharacterCount();
   lastRun = null;
-  elements.compiledOutput.textContent = 'Your compiled prompt will appear here.';
+  elements.compiledOutput.textContent = 'Compile an instruction to inspect its task contract.';
+  elements.resultPane.dataset.state = 'empty';
   elements.irOutput.textContent = 'No prompt IR generated yet.';
   elements.issueList.replaceChildren();
-  elements.diagnosticSummary.textContent = 'Run an analysis to inspect ambiguity, output contracts, conflicts, and safety boundaries.';
+  elements.diagnosticSummary.textContent = 'Run the compiler to inspect ambiguity, missing contracts, conflicts, and instruction boundaries.';
   elements.issueCount.textContent = '0';
   elements.scoreValue.textContent = '—';
-  elements.scoreBadge.className = 'score-badge';
-  Object.values(elements.metrics).forEach((metric) => { metric.textContent = '—'; });
+  elements.scoreBadge.className = 'readiness-score';
+  elements.scoreBadge.setAttribute('aria-label', 'Readiness score not yet calculated');
+  Object.values(elements.metrics).forEach((metric) => {
+    metric.value.textContent = '—';
+    metric.root.style.setProperty('--value', '0%');
+    metric.root.setAttribute('aria-valuenow', '0');
+  });
   elements.copy.disabled = true;
   elements.optimize.disabled = true;
-  elements.resultTitle.textContent = 'Compiled prompt';
+  elements.resultTitle.textContent = 'Task contract';
   elements.resultOrigin.textContent = 'Deterministic local compiler';
   elements.rawPrompt.focus();
 }
@@ -327,6 +363,7 @@ function bindEvents() {
   });
   elements.target.addEventListener('change', () => {
     config.target = elements.target.value;
+    updateTargetDescription();
     persistConfig();
   });
   elements.compile.addEventListener('click', compileCurrentPrompt);
@@ -348,13 +385,25 @@ function bindEvents() {
     await refreshProviderStatus();
     showToast('Settings saved.');
   });
-  document.querySelectorAll('.tab-button').forEach((button) => {
+  const tabs = [...document.querySelectorAll('.tab-button')];
+  tabs.forEach((button, index) => {
     button.addEventListener('click', () => selectTab(button.dataset.tab));
+    button.addEventListener('keydown', (event) => {
+      if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+      event.preventDefault();
+      let nextIndex = index;
+      if (event.key === 'ArrowLeft') nextIndex = (index - 1 + tabs.length) % tabs.length;
+      if (event.key === 'ArrowRight') nextIndex = (index + 1) % tabs.length;
+      if (event.key === 'Home') nextIndex = 0;
+      if (event.key === 'End') nextIndex = tabs.length - 1;
+      selectTab(tabs[nextIndex].dataset.tab, { focus: true });
+    });
   });
 }
 
 function init() {
   elements.target.value = config.target;
+  updateTargetDescription();
   updateCharacterCount();
   bindEvents();
   refreshProviderStatus();
