@@ -4,17 +4,17 @@
 
 The latest commit on `main` is the supported development version while Prompteur is pre-1.0.
 
-## Reporting a vulnerability
+## Reporting a security concern
 
-Please use GitHub private vulnerability reporting when it is enabled for the repository. Do not include API keys, personal prompts, private model output, or exploit details in a public issue.
+Use GitHub private vulnerability reporting when it is enabled for the repository. Keep sensitive values, personal prompts, private model output, and detailed misuse instructions out of public issues.
 
-A useful report includes:
+A useful private report includes:
 
 - affected commit or version,
 - reproduction steps using non-sensitive data,
 - expected and observed behavior,
-- security impact,
-- suggested mitigation when available.
+- likely impact,
+- a suggested mitigation when available.
 
 ## Security model
 
@@ -22,11 +22,17 @@ Prompteur is local-first, but local software still crosses important trust bound
 
 ### Browser storage
 
-Non-secret preferences may be stored in local storage. API keys must never be persisted there. Gemini keys entered in the UI remain in page memory for the current session only.
+Non-sensitive preferences may be stored locally. Provider access values entered in the interface remain in page memory for the current session and are not written to browser storage.
+
+### Local compile bridge
+
+`POST /api/compile` is deterministic and does not invoke a provider or execute commands. Every `/api/` route rejects non-loopback clients, even when `HOST` is configured to bind broadly. The server intentionally omits permissive cross-origin access headers, so unrelated web pages cannot call the bridge directly.
+
+The bridge validates input length, supported catalog values, option types, and unknown option names. Browser extensions, MCP transports, remote access, and direct execution require separate threat models rather than weakening this boundary.
 
 ### Provider proxy
 
-The Node server validates provider requests and limits request size. Ollama connections are restricted to localhost to avoid turning Prompteur into an arbitrary outbound proxy or exposing remote model servers accidentally.
+The Node server validates provider requests and limits request size. Ollama connections are restricted to localhost to avoid turning Prompteur into an unrestricted outbound proxy or exposing remote model servers accidentally.
 
 ### Static files
 
@@ -42,17 +48,18 @@ Model-assisted rewrites are untrusted candidates. They must not automatically ex
 
 ## Maintainer requirements
 
-- Never commit credentials or real private prompts.
+- Keep sensitive values and real private prompts out of commits.
 - Keep security headers and static allowlisting covered by tests.
-- Add an ADR before allowing remote provider hosts or persistent secrets.
-- Avoid logging request bodies, keys, or provider responses.
+- Add an ADR before allowing remote provider hosts or persistent sensitive values.
+- Avoid logging request bodies, provider access values, or provider responses.
 - Keep error messages useful without exposing sensitive upstream details.
-- Run a secret scan before releases.
+- Run a sensitive-value scan before releases.
 
 ## Known limitations
 
-- A user-entered Gemini key is transmitted through the local Prompteur server to Google’s API for the requested operation.
-- Browser extensions or a compromised local machine can observe page memory and network activity.
+- A user-entered Gemini access value is transmitted through the local Prompteur server to Google for the requested operation.
+- Browser extensions or a compromised local machine can observe page memory and local network activity.
 - Deterministic prompt-injection detection is heuristic and incomplete.
 - Local rate limiting is not a substitute for production authentication or abuse prevention.
+- Loopback-only access is not an authenticated multi-user deployment model.
 - Prompteur is not yet designed for multi-user internet deployment.
