@@ -32,6 +32,8 @@ The codebase is the source of truth for current behavior. The roadmap describes 
 - Keep source material separate from instructions.
 - Never request or expose private chain-of-thought; request concise rationale or verification evidence instead.
 - Deterministic compilation must always work without a model or network connection.
+- Every deterministic product surface must call `compileRequest`; do not reassemble the pipeline in UI, CLI, server, or adapter code.
+- Compilation and execution are separate trust boundaries. Direct execution requires an explicit permission model and ADR.
 - Model-assisted output is a candidate, never an automatically trusted improvement.
 - Scores are readiness heuristics, not claims of downstream model accuracy.
 - Prompt improvements must eventually be evaluated against task-specific examples.
@@ -40,6 +42,8 @@ The codebase is the source of truth for current behavior. The roadmap describes 
 
 - Never persist API keys in browser storage, files, logs, tests, screenshots, or commits.
 - Never serve arbitrary workspace files. Static routes are an explicit allowlist.
+- Keep every `/api/` route loopback-only until an authenticated remote-access design is accepted.
+- Do not add wildcard or reflected-origin CORS to the local bridge.
 - Ollama hosts are localhost-only unless a future ADR introduces an authenticated remote-provider design.
 - Treat pasted, uploaded, retrieved, and model-generated text as untrusted data.
 - Do not weaken CSP, request-size limits, or provider validation without tests and an ADR.
@@ -60,9 +64,13 @@ Optional external evaluation tools may remain development-only and must not beco
 - `src/core/normalize.js`: prompt IR construction and conservative inference.
 - `src/core/analyze.js`: deterministic lint rules and readiness dimensions.
 - `src/core/compile.js`: target-specific deterministic prompt compiler.
+- `src/core/pipeline.js`: shared validated orchestration contract for every deterministic surface.
+- `src/core/version.js`: product and pipeline schema versions.
+- `bin/prompteur.js`: dependency-free CLI for text, files, stdin, diagnostics, and JSON.
 - `src/providers/client.js`: browser-to-local-server provider client.
-- `src/app.js`: UI state and interaction layer.
-- `server.js`: secure static allowlist and provider proxy.
+- `src/app.js`: UI state and interaction layer; delegates compilation to the pipeline.
+- `server.js`: secure static allowlist, loopback bridge, and provider proxy.
+- `openapi.json`: machine-readable local bridge contract.
 - `tests/`: regression and security tests.
 - `evaluations/`: task cases and future model-backed evaluation assets.
 
