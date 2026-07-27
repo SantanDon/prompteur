@@ -1,5 +1,9 @@
 {
   "mcpServers": {
+    "prompteur": {
+      "command": "prompteur-mcp",
+      "args": []
+    },
     "figma": {
       "url": "https://mcp.figma.com/mcp"
     },
