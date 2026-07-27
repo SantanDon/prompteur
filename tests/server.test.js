@@ -19,7 +19,7 @@ test('server exposes the app, versioned health, capabilities, and OpenAPI contra
   await withServer(async (baseUrl) => {
     const health = await fetch(`${baseUrl}/api/health`);
     assert.equal(health.status, 200);
-    assert.deepEqual(await health.json(), { ok: true, service: 'prompteur', version: '0.3.0' });
+    assert.deepEqual(await health.json(), { ok: true, service: 'prompteur', version: '0.3.1' });
 
     const capabilities = await fetch(`${baseUrl}/api/capabilities`);
     assert.equal(capabilities.status, 200);
@@ -44,7 +44,7 @@ test('server exposes the app, versioned health, capabilities, and OpenAPI contra
 
     const openapi = await fetch(`${baseUrl}/openapi.json`);
     assert.equal(openapi.status, 200);
-    assert.equal((await openapi.json()).info.version, '0.3.0');
+    assert.equal((await openapi.json()).info.version, '0.3.1');
   });
 });
 
@@ -61,7 +61,7 @@ test('compile endpoint returns the same machine-readable pipeline contract used 
 
     assert.equal(response.status, 200);
     const payload = await response.json();
-    assert.equal(payload.engine.version, '0.3.0');
+    assert.equal(payload.engine.version, '0.3.1');
     assert.equal(payload.ir.behavior.target, 'agent');
     assert.match(payload.prompt, /Inspect the available context and tools/);
     assert.ok(payload.analysis.readiness > 0);
