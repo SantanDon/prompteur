@@ -9,6 +9,7 @@ Read:
 - `AGENTS.md`
 - `docs/PRODUCT_PHILOSOPHY.md`
 - `docs/ARCHITECTURE.md`
+- `docs/MCP.md` for MCP changes
 - `docs/ROADMAP.md`
 
 For substantial architecture work, open an issue before implementation. A framework migration, runtime dependency, provider expansion, secret-handling change, or evaluation-semantics change requires an ADR.
@@ -35,7 +36,7 @@ No dependency installation is currently required.
 
 ## Prompt behavior changes
 
-Changes to normalization, linting, compilation, pipeline validation, CLI behavior, or the local bridge must include a representative case in `evaluations/cases.json` or a focused test under `tests/`.
+Changes to normalization, linting, compilation, pipeline validation, CLI behavior, MCP behavior, or the local bridge must include a representative case in `evaluations/cases.json` or a focused test under `tests/`.
 
 A strong case records:
 
@@ -67,6 +68,7 @@ Keep pull requests narrow. Include:
 - Route every deterministic surface through `src/core/pipeline.js`.
 - Keep compilation separate from execution and provider calls behind `server.js`.
 - Keep the HTTP bridge loopback-only and do not add permissive CORS.
+- Keep MCP local over stdio, read-only, protocol-only on stdout, and separate from files, providers, networking, persistence, and execution.
 - Do not persist secrets.
 - Prefer stable issue IDs and semantic checks.
 - Do not add generic prompt wording without a defined failure mode.
