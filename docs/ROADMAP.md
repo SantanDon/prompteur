@@ -17,7 +17,7 @@ Status: complete.
 
 ## v0.3 — Zero Copy-Paste foundation
 
-Status: core foundation implemented.
+Status: foundation implemented; supervised delivery surfaces remain in progress.
 
 Goal: make Prompteur callable where work already happens rather than requiring a browser detour.
 
@@ -31,10 +31,11 @@ Implemented:
 - OpenAPI contract.
 - Package exports for programmatic use.
 - Input and option validation with stable error codes.
+- Dependency-free local MCP stdio server with compile, analyze, and capabilities tools.
+- Structured MCP results, read-only annotations, stable tool errors, and protocol negotiation.
 
 Remaining in the Zero Copy-Paste program:
 
-- MCP server for agents.
 - Authenticated browser extension with compile-before-send.
 - IDE actions and repository-aware handoffs.
 - Direct execution adapter for at least one coding agent.
@@ -126,7 +127,6 @@ Prompteur reaches 1.0 when it can:
 ## Research backlog
 
 - Threat model for authenticated browser-extension communication.
-- MCP transport and tool contract for local agents.
 - Tool-permission and source-provenance fields in Prompt IR.
 - Representative datasets for coding, research, and multimodal tasks.
 - Minimum evidence required to label a candidate improved.
