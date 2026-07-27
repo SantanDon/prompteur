@@ -11,8 +11,9 @@ Before changing behavior, read:
 1. `docs/PRODUCT_PHILOSOPHY.md`
 2. `docs/ARCHITECTURE.md`
 3. `docs/ROADMAP.md`
-4. `docs/DESIGN_SYSTEM.md` and `docs/DESIGN_TOOLING.md` for UI work
-5. Relevant records under `docs/decisions/`
+4. `docs/MCP.md` for MCP or agent-integration work
+5. `docs/DESIGN_SYSTEM.md` and `docs/DESIGN_TOOLING.md` for UI work
+6. Relevant records under `docs/decisions/`
 
 The codebase is the source of truth for current behavior. The roadmap describes intent, not completed functionality.
 
@@ -48,6 +49,9 @@ The codebase is the source of truth for current behavior. The roadmap describes 
 - Ollama hosts are localhost-only unless a future ADR introduces an authenticated remote-provider design.
 - Treat pasted, uploaded, retrieved, and model-generated text as untrusted data.
 - Do not weaken CSP, request-size limits, or provider validation without tests and an ADR.
+- MCP tools remain read-only, deterministic, and closed-world; they must not gain file access, process execution, provider calls, networking, persistence, or state mutation without a separate permission design and ADR.
+- MCP stdout is protocol-only. Optional diagnostics go to stderr.
+- Add Streamable HTTP MCP only with authentication, Origin validation, deployment design, and a dedicated threat model.
 
 
 ## UI and design invariants
@@ -81,6 +85,8 @@ Optional external evaluation tools may remain development-only and must not beco
 - `src/core/pipeline.js`: shared validated orchestration contract for every deterministic surface.
 - `src/core/version.js`: product and pipeline schema versions.
 - `bin/prompteur.js`: dependency-free CLI for text, files, stdin, diagnostics, and JSON.
+- `bin/prompteur-mcp.js`: local stdio MCP entrypoint.
+- `src/mcp/server.js`: lifecycle, static tool schemas, tool calls, protocol errors, and stdio transport.
 - `src/providers/client.js`: browser-to-local-server provider client.
 - `src/app.js`: UI state and accessible interaction layer; delegates compilation to the pipeline.
 - `style.css`: visual tokens, workbench layout, responsive behavior, and interaction states.
@@ -101,4 +107,5 @@ A change is complete only when:
 - secrets and workspace files remain protected,
 - the change improves a defined prompt case or maintenance need,
 - documentation and roadmap status are accurate,
+- MCP changes pass protocol subprocess tests and official-client interoperability checks,
 - substantial UI changes have browser evidence and no document-level overflow.
