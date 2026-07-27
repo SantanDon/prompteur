@@ -1,7 +1,7 @@
 # Open questions
 
-- Which MCP transport and packaging approach best preserves the dependency-free local core?
-- Should the first MCP tools expose only compile and capabilities, or also deterministic diagnostics as a separate tool?
+- When should protocol complexity justify replacing the dependency-free MCP adapter with the official SDK?
+- Which client should receive the first documented one-click Prompteur MCP installer?
 - What connection handshake should a browser extension use with the loopback bridge?
 - Which coding agent should receive the first direct integration: OpenCode, Codex, or Claude Code?
 - Which Prompt IR fields should become first-class next: examples, source provenance, tool boundaries, or grader criteria?
