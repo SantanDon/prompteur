@@ -19,6 +19,7 @@ compileRequest(input, options)
              ├── CLI
              ├── JavaScript package export
              ├── loopback HTTP bridge
+             ├── local MCP server
              └── evaluation runner
 ```
 
@@ -83,7 +84,7 @@ Result contract:
 ```json
 {
   "schemaVersion": "1.0",
-  "engine": { "name": "prompteur", "version": "0.3.0", "mode": "deterministic" },
+  "engine": { "name": "prompteur", "version": "0.3.1", "mode": "deterministic" },
   "prompt": "...",
   "ir": {},
   "analysis": {},
@@ -130,7 +131,19 @@ It manages source entry, target selection, diagnostics, IR inspection, provider 
 
 Every `/api/` route accepts loopback clients only, even when `HOST` is configured broadly. The server intentionally emits no permissive CORS headers.
 
-### 8. Candidate generation
+### 8. Local MCP server
+
+`src/mcp/server.js` exposes the deterministic pipeline over newline-delimited stdio JSON-RPC. `bin/prompteur-mcp.js` is the package entrypoint used by local MCP clients.
+
+The adapter declares only the tools capability and exposes three static read-only tools:
+
+- `compile_intent`,
+- `analyze_intent`,
+- `get_compiler_capabilities`.
+
+It imports no provider, file, process-execution, or network module. Text results preserve broad client compatibility while `structuredContent` carries typed pipeline data. Invalid compiler arguments are tool execution errors so agents can correct them. Unknown tools and methods remain protocol errors.
+
+### 9. Candidate generation
 
 `src/core/compile.js` builds a bounded optimizer request. `src/providers/client.js` sends it to the local server, which supports Ollama on localhost and Gemini through a server-side proxy.
 
@@ -163,6 +176,17 @@ No server, model, key, or network connection is required.
 
 The endpoint cannot execute tools or invoke model providers.
 
+### MCP path
+
+1. A local MCP client launches `prompteur-mcp` as a child process.
+2. Client and server negotiate the protocol revision and tools capability.
+3. The client calls a read-only tool using flat compiler arguments.
+4. The adapter calls `compileRequest` or `getCompilerCapabilities`.
+5. Text and structured results return over stdout.
+6. Closing stdin ends the local server process.
+
+There is no listening port, provider call, file access, or execution permission.
+
 ### Model-assisted path
 
 1. Deterministic compilation completes first.
@@ -174,7 +198,7 @@ The endpoint cannot execute tools or invoke model providers.
 
 ### MCP
 
-Wrap `compileRequest` and `getCompilerCapabilities`; do not place MCP-specific concepts in Prompt IR without an ADR.
+The local stdio adapter is implemented in `src/mcp/server.js`. Add protocol capabilities only when a concrete product need and ADR justify the added state, security, and maintenance surface. Do not place MCP-specific concepts in Prompt IR.
 
 ### Browser extension
 
@@ -200,6 +224,8 @@ Consume the versioned pipeline result plus execution outputs, graders, cost, lat
 
 - Core modules must not depend on DOM APIs.
 - Every deterministic surface must call `compileRequest`.
+- MCP stdout contains protocol messages only; diagnostics belong on stderr.
+- MCP tools remain read-only and closed-world until a separate execution permission model is accepted.
 - Provider calls must not exist inside deterministic core modules.
 - Compilation must remain separate from execution.
 - Secrets must not enter persisted UI state or pipeline results.
