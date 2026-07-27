@@ -45,6 +45,31 @@ prompteur analyze "Fix this"
 
 Run `prompteur --help` for all options.
 
+## MCP server
+
+Prompteur exposes the shared pipeline to local agents through a read-only stdio MCP server.
+
+```bash
+npm link
+```
+
+Generic client configuration:
+
+```json
+{
+  "mcpServers": {
+    "prompteur": {
+      "command": "prompteur-mcp",
+      "args": []
+    }
+  }
+}
+```
+
+The server exposes `compile_intent`, `analyze_intent`, and `get_compiler_capabilities`. It does not read files, execute commands, call providers, access the network, persist prompts, or mutate state.
+
+See [`MCP.md`](MCP.md) for protocol support, direct-path configuration, tool behavior, and security details.
+
 ## Local HTTP bridge
 
 Start the local service:
@@ -118,8 +143,7 @@ console.log(result.prompt);
 
 The shared pipeline and local bridge are prerequisites for:
 
-1. an MCP server for coding and research agents,
-2. a browser extension with compile-before-send,
-3. IDE actions and repository-aware handoffs,
-4. direct execution adapters with explicit permissions,
-5. comparative evaluation and automatic correction.
+1. a browser extension with compile-before-send,
+2. IDE actions and repository-aware handoffs,
+3. direct execution adapters with explicit permissions,
+4. comparative evaluation and automatic correction.
