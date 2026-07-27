@@ -30,7 +30,7 @@ test('CLI accepts stdin and returns the complete machine-readable result', () =>
   });
   assert.equal(result.status, 0, result.stderr);
   const payload = JSON.parse(result.stdout);
-  assert.equal(payload.engine.version, '0.3.0');
+  assert.equal(payload.engine.version, '0.3.1');
   assert.equal(payload.ir.behavior.target, 'research');
   assert.match(payload.prompt, /Prefer primary and current sources/);
 });
