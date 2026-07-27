@@ -156,6 +156,22 @@ Source:
 
 - https://arxiv.org/abs/2312.16171
 
+### Model Context Protocol
+
+The current stable MCP revision is `2025-11-25`. The protocol uses JSON-RPC 2.0, initialization and capability negotiation, and newline-delimited UTF-8 messages for stdio. Local clients spawn stdio servers as child processes; servers must reserve stdout for protocol messages and may log to stderr.
+
+Prompteur adopts only the tools capability because its current need is narrow and deterministic. The adapter returns structured content with a mirrored text representation, marks tools read-only and non-destructive, maps invalid compiler inputs to tool execution errors, and keeps unknown tools or methods as protocol errors.
+
+A local stdio transport is preferred over Streamable HTTP because compilation needs no listening port, authentication, remote deployment, or Origin policy. The official TypeScript client is used as release-time interoperability evidence without becoming a runtime dependency.
+
+Sources:
+
+- https://modelcontextprotocol.io/specification/2025-11-25
+- https://modelcontextprotocol.io/specification/2025-11-25/basic/lifecycle
+- https://modelcontextprotocol.io/specification/2025-11-25/basic/transports
+- https://modelcontextprotocol.io/specification/2025-11-25/server/tools
+- https://github.com/modelcontextprotocol/typescript-sdk
+
 ## Tool adoption matrix
 
 | Tool or method | Role in ecosystem | Prompteur decision |
