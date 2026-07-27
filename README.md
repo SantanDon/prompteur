@@ -3,7 +3,7 @@
 
 **A local-first intent compiler and integration bridge for AI models and agents.**
 
-Prompteur turns rough human intent into a structured, target-aware, testable task contract. It diagnoses ambiguity and unsafe instruction boundaries, compiles a deterministic prompt, and exposes that same result through a browser workbench, CLI, JavaScript API, and loopback HTTP bridge.
+Prompteur turns rough human intent into a structured, target-aware, testable task contract. It diagnoses ambiguity and unsafe instruction boundaries, compiles a deterministic prompt, and exposes that same result through a browser workbench, CLI, JavaScript API, loopback HTTP bridge, and local MCP server.
 
 > Better prompts are not necessarily longer. They are clearer, appropriately constrained, target-aware, and testable.
 
@@ -19,10 +19,11 @@ shared Prompteur pipeline
    ├── CLI / stdin / files
    ├── JavaScript API
    ├── local HTTP bridge
+   ├── MCP agents
    └── deterministic evaluation runner
 ```
 
-The next integration surfaces—MCP, browser extension, IDE actions, and direct agent execution—will wrap this same pipeline rather than reimplementing prompt behavior.
+The next integration surfaces—browser extension, IDE actions, and direct agent execution—will wrap this same pipeline rather than reimplementing prompt behavior.
 
 ## Try the browser workbench
 
@@ -91,6 +92,36 @@ prompteur analyze "Fix this"
 
 Run `prompteur --help` for the complete command contract.
 
+
+## MCP server
+
+Prompteur can be called directly by local MCP-capable agents. Create the command once:
+
+```bash
+npm link
+```
+
+Then add a local stdio server to the client:
+
+```json
+{
+  "mcpServers": {
+    "prompteur": {
+      "command": "prompteur-mcp",
+      "args": []
+    }
+  }
+}
+```
+
+Available read-only tools:
+
+- `compile_intent`
+- `analyze_intent`
+- `get_compiler_capabilities`
+
+The MCP server cannot read files, execute commands, call providers, access the network, persist prompts, or mutate state. See [`docs/MCP.md`](docs/MCP.md).
+
 ## Local HTTP bridge
 
 Start `npm start`, then call:
@@ -135,7 +166,7 @@ console.log(result.prompt);
 - **Prompt IR** — separates objective, context, constraints, audience, output, verification, and target behavior.
 - **Deterministic linting** — flags vague objectives, implicit context, missing output contracts, conflicts, prompt injection, persona bloat, and other defined failure modes.
 - **Target compilers** — general model, coding/tool agent, research model, and image model.
-- **CLI and HTTP bridge** — text, stdin, files, JSON output, capabilities discovery, and OpenAPI.
+- **CLI, MCP, and HTTP bridge** — text, stdin, files, direct agent tools, JSON output, capabilities discovery, and OpenAPI.
 - **Authored browser workbench** — a responsive source-to-contract interface with accessible tabs, integrated contract signals, and explicit provider state.
 - **Inspectable browser results** — compiled prompt, diagnostics, readiness dimensions, and serialized IR.
 - **Optional candidates** — local Ollama or Gemini model-assisted rewrites, clearly distinguished from the deterministic baseline.
@@ -166,6 +197,7 @@ Optional defaults are listed in `config.example.env`.
 ```bash
 npm start      # local workbench and loopback bridge
 npm run compile -- "Your request"  # invoke the CLI through npm
+npm run mcp    # start the stdio MCP server for a local client
 npm test       # unit, CLI, pipeline, and server tests
 npm run eval   # deterministic prompt regression cases
 npm run check  # syntax, tests, and evaluations
@@ -175,16 +207,18 @@ npm run check  # syntax, tests, and evaluations
 
 ```text
 bin/prompteur.js     Composable CLI
+bin/prompteur-mcp.js Local stdio MCP entrypoint
 src/core/pipeline.js Shared deterministic product pipeline
 src/core/            Prompt IR, lint rules, catalogs, compiler, versions
 src/providers/       Browser client for optional providers
+src/mcp/             Dependency-free MCP protocol adapter
 src/app.js           Browser interaction and accessible state
 style.css             Prompteur visual system and responsive layout
 .agents/skills/       Project-specific agent workflows
 openapi.json         Local bridge contract
 evaluations/         Representative prompt regression cases
 scripts/             Evaluation runner
-tests/               Core, pipeline, CLI, server, and security tests
+tests/               Core, pipeline, CLI, MCP, server, UI, and security tests
 docs/                Product, design, integrations, architecture, roadmap, ADRs
 server.js             Secure static server, local bridge, provider proxy
 AGENTS.md             Rules for agent maintainers
@@ -207,6 +241,7 @@ Read:
 
 - [`docs/PRODUCT_PHILOSOPHY.md`](docs/PRODUCT_PHILOSOPHY.md)
 - [`docs/INTEGRATIONS.md`](docs/INTEGRATIONS.md)
+- [`docs/MCP.md`](docs/MCP.md)
 - [`docs/DESIGN_SYSTEM.md`](docs/DESIGN_SYSTEM.md)
 - [`docs/DESIGN_TOOLING.md`](docs/DESIGN_TOOLING.md)
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
@@ -216,7 +251,7 @@ Read:
 
 ## Project status
 
-Prompteur `0.3` is the first Zero Copy-Paste foundation. Deterministic compilation is reusable from the browser, CLI, JavaScript, local HTTP, and evaluation runner. MCP, browser extension, direct agent execution, comparative evaluation, and project memory remain roadmap work.
+Prompteur `0.3` is the first Zero Copy-Paste foundation. Deterministic compilation is reusable from the browser, CLI, JavaScript, local HTTP, MCP, and evaluation runner. Browser extension, direct agent execution, comparative evaluation, and project memory remain roadmap work.
 
 The readiness score is a transparent contract heuristic. It is not a scientific measure of factual accuracy, model intelligence, or downstream benchmark performance.
 
