@@ -1,7 +1,7 @@
 
 # Agent implementation plan
 
-Updated: 2026-07-20
+Updated: 2026-07-27
 Workspace: repository root
 Target agent: any repository maintenance agent
 
@@ -14,7 +14,8 @@ Evolve Prompteur from a browser prompt workbench into a universal local-first in
 - v0.2 established Prompt IR, deterministic diagnostics, target compilation, optional provider candidates, secure serving, and evaluation cases.
 - v0.3 Zero Copy-Paste foundation is implemented around one `compileRequest` pipeline.
 - The browser has an authored compiler-workbench design system, responsive containment tests, and a project frontend-design Agent Skill.
-- Browser, CLI, JavaScript exports, loopback HTTP bridge, and deterministic evaluations share the same versioned result contract.
+- Browser, CLI, JavaScript exports, loopback HTTP bridge, local MCP tools, and deterministic evaluations share the same versioned result contract.
+- Prompteur 0.3.1 exposes a dependency-free stdio MCP server with compile, analyze, and capabilities tools.
 - The public repository is `SantanDon/prompteur` on `main`.
 
 ## Evidence
@@ -23,6 +24,7 @@ Verification required for every substantial change:
 
 - `npm run check`.
 - CLI text, stdin, invalid-option, and JSON flows.
+- MCP lifecycle, discovery, tool calls, tool errors, parse recovery, stdout purity, and official-client interoperability.
 - `/api/health`, `/api/capabilities`, `/api/compile`, and static allowlist tests.
 - Desktop and mobile browser smoke flows when browser code or served module paths change.
 - GitHub Pages smoke test when static browser modules change.
@@ -34,6 +36,7 @@ Verification required for every substantial change:
 - Every surface calls the shared pipeline; none reconstructs normalization, analysis, and compilation independently.
 - The HTTP bridge is loopback-only and emits no permissive CORS.
 - Compilation cannot execute commands or invoke providers.
+- MCP is local stdio, tools-only, read-only, non-destructive, and closed-world.
 - Model rewrites remain candidates until evaluated.
 
 ## Required context
@@ -43,6 +46,7 @@ Read before substantial changes:
 - `AGENTS.md`
 - `docs/PRODUCT_PHILOSOPHY.md`
 - `docs/INTEGRATIONS.md`
+- `docs/MCP.md`
 - `docs/DESIGN_SYSTEM.md`
 - `docs/DESIGN_TOOLING.md`
 - `.agents/skills/prompteur-frontend-design/SKILL.md`
@@ -52,17 +56,18 @@ Read before substantial changes:
 - `docs/MAINTAINER_LOOP.md`
 - `docs/decisions/0001-prompt-ir-and-deterministic-core.md`
 - `docs/decisions/0002-shared-pipeline-cli-and-local-bridge.md`
+- `docs/decisions/0004-dependency-free-local-mcp-stdio.md`
 
 ## Next highest-value action
 
-Create a canonical Figma file/component map for the shipped workbench when a design URL is available, then implement a local MCP adapter around `compileRequest` and `getCompilerCapabilities` without adding provider or execution behavior to the deterministic core.
+Design the authenticated browser-extension bridge and a compile-before-send prototype without opening the loopback service to arbitrary web origins.
 
 Follow with:
 
-1. authenticated browser-extension bridge design,
-2. compile-before-send extension prototype,
-3. direct adapter for one coding agent with explicit permissions,
-4. original/baseline/candidate comparison and evaluation evidence.
+1. IDE actions and repository-aware handoffs,
+2. direct adapter for one coding agent with explicit permissions,
+3. original/baseline/candidate comparison and evaluation evidence,
+4. a canonical Figma component map when an exact design URL becomes available.
 
 ## Implementation contract
 
