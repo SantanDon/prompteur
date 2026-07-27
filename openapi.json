@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Prompteur Local Bridge API",
-    "version": "0.3.0",
+    "version": "0.3.1",
     "description": "Loopback-only deterministic prompt compilation API. No model or API key is required."
   },
   "servers": [
