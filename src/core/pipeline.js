@@ -134,7 +134,7 @@ export function getCompilerCapabilities() {
       { id: 'browser', status: 'available' },
       { id: 'cli', status: 'available' },
       { id: 'http', status: 'available', baseUrl: 'http://127.0.0.1:3030' },
-      { id: 'mcp', status: 'planned' },
+      { id: 'mcp', status: 'available', transport: 'stdio', command: 'prompteur-mcp' },
       { id: 'browser-extension', status: 'planned' },
     ],
   };
