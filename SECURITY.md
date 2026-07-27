@@ -30,6 +30,14 @@ Non-sensitive preferences may be stored locally. Provider access values entered 
 
 The bridge validates input length, supported catalog values, option types, and unknown option names. Browser extensions, MCP transports, remote access, and direct execution require separate threat models rather than weakening this boundary.
 
+### Local MCP server
+
+The MCP server uses stdio and is launched as a child process by a local client. It opens no listening port and requires no credentials.
+
+Its three tools are deterministic and read-only. The implementation imports only the shared compiler pipeline and exposes no file access, process execution, provider call, network request, prompt persistence, or state mutation. Tool schemas reject unknown arguments and individual JSON message lines are size-limited. Stdout is reserved for valid MCP messages; optional diagnostics use stderr.
+
+Tool annotations are advisory. The actual boundary is enforced by the modules and operations available to the adapter. Adding resources, prompts, sampling, elicitation, tasks, Streamable HTTP, file access, providers, or execution requires a new security review and ADR.
+
 ### Provider proxy
 
 The Node server validates provider requests and limits request size. Ollama connections are restricted to localhost to avoid turning Prompteur into an unrestricted outbound proxy or exposing remote model servers accidentally.
@@ -51,6 +59,7 @@ Model-assisted rewrites are untrusted candidates. They must not automatically ex
 - Keep sensitive values and real private prompts out of commits.
 - Keep security headers and static allowlisting covered by tests.
 - Add an ADR before allowing remote provider hosts or persistent sensitive values.
+- Keep MCP tools read-only and prevent non-protocol stdout output.
 - Avoid logging request bodies, provider access values, or provider responses.
 - Keep error messages useful without exposing sensitive upstream details.
 - Run a sensitive-value scan before releases.
@@ -59,6 +68,7 @@ Model-assisted rewrites are untrusted candidates. They must not automatically ex
 
 - A user-entered Gemini access value is transmitted through the local Prompteur server to Google for the requested operation.
 - Browser extensions or a compromised local machine can observe page memory and local network activity.
+- A compromised MCP client or local machine can observe prompts passed through the stdio child process.
 - Deterministic prompt-injection detection is heuristic and incomplete.
 - Local rate limiting is not a substitute for production authentication or abuse prevention.
 - Loopback-only access is not an authenticated multi-user deployment model.
