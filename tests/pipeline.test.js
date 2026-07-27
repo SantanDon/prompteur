@@ -16,7 +16,7 @@ test('compileRequest returns one stable result contract for every product surfac
 
   assert.equal(result.schemaVersion, '1.0');
   assert.equal(result.engine.name, 'prompteur');
-  assert.equal(result.engine.version, '0.3.0');
+  assert.equal(result.engine.version, '0.3.1');
   assert.equal(result.ir.behavior.target, 'agent');
   assert.match(result.prompt, /Inspect the available context and tools/);
   assert.ok(result.analysis.readiness > 0);
