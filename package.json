@@ -1,6 +1,6 @@
 {
   "name": "prompteur",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "A local-first intent compiler, linter, and integration bridge for AI models and agents.",
   "type": "module",
   "private": false,
@@ -22,15 +22,18 @@
     "compile": "node bin/prompteur.js compile",
     "test": "node --test",
     "eval": "node scripts/evaluate.js",
-    "check": "node --check server.js && node --check bin/prompteur.js && node --check src/bootstrap.js && node --check src/app.js && node --check src/core/pipeline.js && node --test && node scripts/evaluate.js"
+    "check": "node --check server.js && node --check bin/prompteur.js && node --check bin/prompteur-mcp.js && node --check src/bootstrap.js && node --check src/app.js && node --check src/core/pipeline.js && node --check src/mcp/server.js && node --test && node scripts/evaluate.js",
+    "mcp": "node bin/prompteur-mcp.js"
   },
   "bin": {
-    "prompteur": "./bin/prompteur.js"
+    "prompteur": "./bin/prompteur.js",
+    "prompteur-mcp": "./bin/prompteur-mcp.js"
   },
   "exports": {
     ".": "./src/core/pipeline.js",
     "./pipeline": "./src/core/pipeline.js",
-    "./version": "./src/core/version.js"
+    "./version": "./src/core/version.js",
+    "./mcp": "./src/mcp/server.js"
   },
   "files": [
     "bin/",
@@ -40,6 +43,7 @@
     "style.css",
     "openapi.json",
     "docs/INTEGRATIONS.md",
+    "docs/MCP.md",
     "config.example.env",
     "docs/DESIGN_SYSTEM.md",
     "docs/DESIGN_TOOLING.md",
