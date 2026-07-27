@@ -18,3 +18,8 @@
 - Figma remote MCP is preferred for structured design context; Playwright is required for browser evidence.
 - Storybook and frontend-framework adoption remain deferred until an ADR proves a real component-system need.
 - The project-specific UI workflow lives in `.agents/skills/prompteur-frontend-design/`.
+- MCP uses local newline-delimited stdio and the current stable `2025-11-25` revision; Streamable HTTP is out of scope without authentication and a threat model.
+- MCP exposes only `compile_intent`, `analyze_intent`, and `get_compiler_capabilities`.
+- MCP tools are deterministic, read-only, non-destructive, idempotent, and closed-world.
+- MCP imports only the shared pipeline; files, providers, networking, persistence, and execution remain separate boundaries.
+- The small MCP surface remains dependency-free and is release-tested with the official TypeScript client.
