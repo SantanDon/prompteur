@@ -68,6 +68,16 @@ For UI changes:
 - exercise the changed interaction,
 - verify keyboard and dialog behavior where relevant.
 
+For MCP changes:
+
+- test initialization and protocol negotiation,
+- test tool discovery and every changed tool,
+- verify invalid input returns a model-visible tool error,
+- verify unknown methods remain protocol errors,
+- run a complete stdio subprocess session,
+- connect using the official MCP client outside the runtime dependency graph,
+- verify stdout contains MCP messages only and diagnostics use stderr.
+
 For provider changes:
 
 - test missing credentials,
@@ -143,6 +153,7 @@ Recommended recurring loop:
 - run supported-browser smoke tests,
 - scan for secrets and accidentally served files,
 - verify README claims,
+- verify MCP client interoperability when the adapter changed,
 - review new ADRs,
 - publish release notes with known limitations.
 
