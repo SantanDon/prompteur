@@ -12,3 +12,15 @@ evaluations/results/
 .ai-bridge/session-log.jsonl
 .ai-bridge/execution-log.jsonl
 .ai-bridge/implementation-diff.patch
+.ai-bridge/H2_*.json
+.ai-bridge/OLLAMA_UNAVAILABLE_PROBE_*.json
+.ai-bridge/semantic-gate-candidate/
+.ai-bridge/semantic-postfix/
+.ai-bridge/semantic-round4/
+.ai-bridge/underspecified-round2/
+.ai-bridge/underspecified-round3/
+.ai-bridge/semantic-gate-candidate-runner.mjs
+.ai-bridge/semantic-postfix-runner.mjs
+.ai-bridge/semantic-round4-runner.mjs
+.ai-bridge/underspecified-round2-runner.mjs
+.ai-bridge/underspecified-round3-runner.mjs

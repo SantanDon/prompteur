@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { buildPromptIR } from '../src/core/normalize.js';
 import { analyzePrompt } from '../src/core/analyze.js';
 import { compilePrompt } from '../src/core/compile.js';
+import { compileRequest, getCompilerCapabilities, PromptInputError } from '../src/core/pipeline.js';
 
 test('buildPromptIR preserves intent and extracts hard constraints', () => {
   const ir = buildPromptIR(
@@ -14,6 +15,16 @@ test('buildPromptIR preserves intent and extracts hard constraints', () => {
   assert.equal(ir.behavior.taskType, 'software');
   assert.equal(ir.output.format, 'code');
   assert.ok(ir.constraints.some((value) => value.includes('must use no external dependencies')));
+});
+
+test('buildPromptIR treats semantic-preservation language as a hard constraint', () => {
+  const ir = buildPromptIR(
+    "Replace parseInt(value, 10) with Number(value). Preserve behavior for every string input, including '10px', '', and whitespace. Keep the result identical where the operations are not equivalent.",
+    { target: 'general' },
+  );
+
+  assert.ok(ir.constraints.some((value) => value.startsWith('Preserve behavior')));
+  assert.ok(ir.constraints.some((value) => value.includes('not equivalent')));
 });
 
 test('analyzePrompt detects weak contracts and instruction injection', () => {
@@ -44,4 +55,44 @@ test('image targets compile to a focused visual contract', () => {
   assert.match(compiled, /## Visual objective/);
   assert.match(compiled, /## Composition contract/);
   assert.match(compiled, /Return only the final image-generation prompt/);
+});
+
+test('no profile remains the unchanged default while an explicit managed-agent profile only suppresses redundant tool discovery', () => {
+  const input = 'Review the repository and implement a safe fix. Return complete code and verify it works.';
+  const baseline = compileRequest(input, { target: 'agent', persona: 'software', outputFormat: 'code' });
+  const profiled = compileRequest(input, { target: 'agent', persona: 'software', outputFormat: 'code', profile: 'managed-coding-agent' });
+
+  assert.equal(baseline.provenance.profile, null);
+  assert.match(baseline.prompt, /Inspect the available context and tools before changing anything\./);
+  assert.doesNotMatch(profiled.prompt, /Inspect the available context and tools before changing anything\./);
+  assert.match(profiled.prompt, /Use the smallest coherent implementation/);
+  assert.match(profiled.prompt, /Do not invent file contents, commands, test results, or completed work\./);
+  assert.match(profiled.prompt, /Verify the changed behavior and report remaining risk\./);
+  assert.equal(profiled.provenance.profile, 'managed-coding-agent');
+  assert.ok(profiled.prompt.length < baseline.prompt.length);
+});
+
+test('profiles are explicit-only and invalid or incompatible selections fail closed', () => {
+  const ordinary = compileRequest('Implement the requested change.', { target: 'agent' });
+  assert.equal(ordinary.ir.behavior.profile, '');
+
+  assert.throws(
+    () => compileRequest('Implement the requested change.', { target: 'agent', profile: 'missing-profile' }),
+    (error) => error instanceof PromptInputError && error.code === 'INVALID_PROFILE',
+  );
+  assert.throws(
+    () => compileRequest('Summarize this.', { target: 'general', profile: 'managed-coding-agent' }),
+    (error) => error instanceof PromptInputError && error.code === 'INCOMPATIBLE_PROFILE',
+  );
+});
+
+test('compiler capabilities expose experimental profile metadata without making it default', () => {
+  const capabilities = getCompilerCapabilities();
+  const profile = capabilities.profiles.find((item) => item.id === 'managed-coding-agent');
+  assert.ok(profile);
+  assert.equal(profile.status, 'experimental');
+  assert.equal(profile.evidenceState, 'not_evaluated');
+  assert.equal(profile.default, false);
+  assert.deepEqual(profile.compatibleTargets, ['agent']);
+  assert.equal(profile.capabilities.nativeToolLoop, true);
 });

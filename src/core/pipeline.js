@@ -3,6 +3,7 @@ import { analyzePrompt } from './analyze.js';
 import { OUTPUT_FORMATS, PERSONAS, TARGETS, TONES } from './catalog.js';
 import { compilePrompt } from './compile.js';
 import { buildPromptIR, normalizeText } from './normalize.js';
+import { getHarnessProfile, listHarnessProfiles, PROFILE_REGISTRY_VERSION } from './profiles.js';
 import { PIPELINE_SCHEMA_VERSION, PROMPTEUR_VERSION } from './version.js';
 
 export const MAX_PROMPT_CHARACTERS = 80_000;
@@ -15,6 +16,7 @@ const OPTION_KEYS = new Set([
   'audience',
   'deliverable',
   'verify',
+  'profile',
 ]);
 
 export class PromptInputError extends Error {
@@ -49,6 +51,19 @@ function optionalText(value, name, maxLength = 4_000) {
   return normalized;
 }
 
+function normalizeProfile(value, target) {
+  const id = optionalText(value, 'profile', 120);
+  if (!id) return '';
+  const profile = getHarnessProfile(id);
+  if (!profile) {
+    throw new PromptInputError(`Unsupported profile "${id}". Choose one of: ${listHarnessProfiles().map((item) => item.id).join(', ')}.`, 'INVALID_PROFILE');
+  }
+  if (!profile.compatibleTargets.includes(target)) {
+    throw new PromptInputError(`Profile "${id}" is not compatible with target "${target}".`, 'INCOMPATIBLE_PROFILE');
+  }
+  return id;
+}
+
 export function normalizeCompilerOptions(options = {}) {
   if (options == null) options = {};
   if (typeof options !== 'object' || Array.isArray(options)) {
@@ -64,14 +79,16 @@ export function normalizeCompilerOptions(options = {}) {
     throw new PromptInputError('verify must be true or false.', 'INVALID_VERIFY');
   }
 
+  const target = choice(options.target, 'general', TARGETS, 'target');
   return {
-    target: choice(options.target, 'general', TARGETS, 'target'),
+    target,
     persona: choice(options.persona, 'none', PERSONAS, 'persona'),
     tone: choice(options.tone, 'neutral', TONES, 'tone'),
     outputFormat: choice(options.outputFormat, 'auto', OUTPUT_FORMATS, 'output format'),
     audience: optionalText(options.audience, 'audience'),
     deliverable: optionalText(options.deliverable, 'deliverable'),
     verify: options.verify !== false,
+    profile: normalizeProfile(options.profile, target),
   };
 }
 
@@ -110,6 +127,8 @@ export function compileRequest(input, options = {}) {
       generatedAt: ir.metadata.createdAt,
       sourceCharacters: ir.metadata.sourceLength,
       target: ir.behavior.target,
+      profile: ir.behavior.profile || null,
+      profileRegistryVersion: PROFILE_REGISTRY_VERSION,
     },
   };
 }
@@ -130,6 +149,18 @@ export function getCompilerCapabilities() {
     personas: catalogEntries(PERSONAS).map(({ role: _role, guidance: _guidance, ...entry }) => entry),
     tones: Object.entries(TONES).map(([id, description]) => ({ id, description })),
     outputFormats: Object.entries(OUTPUT_FORMATS).map(([id, description]) => ({ id, description })),
+    profileRegistryVersion: PROFILE_REGISTRY_VERSION,
+    profiles: listHarnessProfiles().map((profile) => ({
+      id: profile.id,
+      version: profile.version,
+      label: profile.label,
+      description: profile.description,
+      status: profile.status,
+      evidenceState: profile.evidenceState,
+      default: profile.default,
+      compatibleTargets: [...profile.compatibleTargets],
+      capabilities: { ...profile.capabilities },
+    })),
     surfaces: [
       { id: 'browser', status: 'available' },
       { id: 'cli', status: 'available' },

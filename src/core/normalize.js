@@ -15,7 +15,7 @@ const TASK_PATTERNS = [
   ['security', /\b(security|vulnerability|bug bounty|threat model|exploit|malware|pentest)\b/i],
 ];
 
-const CONSTRAINT_PATTERN = /\b(must|must not|do not|don't|only|never|without|avoid|under|maximum|minimum|at least|no more than|required|strictly)\b/i;
+const CONSTRAINT_PATTERN = /\b(must|must not|do not|don't|only|never|without|avoid|under|maximum|minimum|at least|no more than|required|strictly|preserv(?:e|es|ed|ing)|unchanged|identical|equivalent)\b/i;
 const SUCCESS_PATTERN = /\b(success|done when|acceptance criteria|should pass|verify|validated?|working|correct|accurate|complete)\b/i;
 const CONTEXT_PATTERN = /\b(context|background|given|existing|current|source material|repository|audience|environment|platform|jurisdiction)\b/i;
 
@@ -89,6 +89,7 @@ export function buildPromptIR(input, options = {}) {
       persona: options.persona ?? 'none',
       tone: options.tone ?? 'neutral',
       target: options.target ?? 'general',
+      profile: options.profile ?? '',
       taskType,
       untrustedInput: /ignore (all|any|the) previous|system prompt|developer message|jailbreak/i.test(raw),
     },

@@ -1,0 +1,216 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://prompteur.local/schemas/paired-evaluation-record-1.4.json",
+  "title": "Prompteur Paired Evaluation Record",
+  "type": "object",
+  "required": ["schemaVersion", "kind", "case", "compiler", "arms", "changeEvidence", "comparison", "evidenceBoundary"],
+  "properties": {
+    "schemaVersion": { "const": "1.4" },
+    "kind": { "const": "prompteur.paired-evaluation" },
+    "recordedAt": { "type": ["string", "null"] },
+    "case": {
+      "type": "object",
+      "required": ["id", "description", "input", "options"],
+      "properties": {
+        "id": { "type": "string" },
+        "description": { "type": "string" },
+        "input": { "type": "string" },
+        "options": { "type": "object" }
+      },
+      "additionalProperties": false
+    },
+    "compiler": {
+      "type": "object",
+      "required": ["name", "version", "mode", "pipelineSchemaVersion", "provenance"],
+      "properties": {
+        "name": { "type": "string" },
+        "version": { "type": "string" },
+        "mode": { "const": "deterministic" },
+        "pipelineSchemaVersion": { "type": "string" },
+        "provenance": {
+          "type": "object",
+          "required": ["sourceCharacters", "target", "profile", "profileRegistryVersion"],
+          "properties": {
+            "sourceCharacters": { "type": "integer", "minimum": 0 },
+            "target": { "type": "string" },
+            "profile": { "type": ["string", "null"] },
+            "profileRegistryVersion": { "type": "string" }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "arms": {
+      "type": "object",
+      "required": ["raw", "baseline"],
+      "properties": {
+        "raw": { "$ref": "#/$defs/arm" },
+        "baseline": { "$ref": "#/$defs/arm" },
+        "candidate": { "$ref": "#/$defs/candidateArm" }
+      },
+      "additionalProperties": false
+    },
+    "changeEvidence": {
+      "type": "object",
+      "required": ["objective", "context", "constraints", "output_contract", "verification_behavior"],
+      "properties": {
+        "objective": { "$ref": "#/$defs/evidenceList" },
+        "context": { "$ref": "#/$defs/evidenceList" },
+        "constraints": { "$ref": "#/$defs/evidenceList" },
+        "output_contract": { "$ref": "#/$defs/evidenceList" },
+        "verification_behavior": { "$ref": "#/$defs/evidenceList" }
+      },
+      "additionalProperties": false
+    },
+    "comparison": {
+      "type": "object",
+      "required": ["contractCoverage", "hardConstraintPreservation", "candidate", "compilerVerdict", "taskQualityVerdict", "mayLabelImproved"],
+      "properties": {
+        "contractCoverage": {
+          "type": "object",
+          "required": ["raw", "baseline", "delta"],
+          "properties": {
+            "raw": { "type": "number", "minimum": 0, "maximum": 1 },
+            "baseline": { "type": "number", "minimum": 0, "maximum": 1 },
+            "delta": { "type": "number", "minimum": -1, "maximum": 1 }
+          },
+          "additionalProperties": false
+        },
+        "hardConstraintPreservation": {
+          "type": "object",
+          "required": ["raw", "baseline"],
+          "properties": {
+            "raw": { "type": "number", "minimum": 0, "maximum": 1 },
+            "baseline": { "type": "number", "minimum": 0, "maximum": 1 }
+          },
+          "additionalProperties": false
+        },
+        "candidate": {
+          "oneOf": [
+            { "type": "null" },
+            {
+              "type": "object",
+              "required": ["contractCoverage", "contractCoverageDeltaFromBaseline", "hardConstraintPreservation", "promptCharacterDeltaFromBaseline", "taskQualityVerdict", "mayLabelImproved"],
+              "properties": {
+                "contractCoverage": { "type": "number", "minimum": 0, "maximum": 1 },
+                "contractCoverageDeltaFromBaseline": { "type": "number", "minimum": -1, "maximum": 1 },
+                "hardConstraintPreservation": { "type": "number", "minimum": 0, "maximum": 1 },
+                "promptCharacterDeltaFromBaseline": { "type": "integer" },
+                "taskQualityVerdict": { "const": "not_evaluated" },
+                "mayLabelImproved": { "const": false }
+              },
+              "additionalProperties": false
+            }
+          ]
+        },
+        "compilerVerdict": { "enum": ["baseline_contract_coverage_higher", "contract_coverage_equal", "baseline_contract_coverage_lower"] },
+        "taskQualityVerdict": { "const": "not_evaluated" },
+        "mayLabelImproved": { "const": false }
+      },
+      "additionalProperties": false
+    },
+    "evidenceBoundary": {
+      "type": "object",
+      "required": ["downstreamExecution", "qualityGrading", "claim"],
+      "properties": {
+        "downstreamExecution": { "enum": ["not_run", "completed", "partial_failure", "failed"] },
+        "qualityGrading": { "const": "not_available" },
+        "claim": { "type": "string" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "$defs": {
+    "metrics": {
+      "type": "object",
+      "required": ["promptCharacters", "inputTokens", "outputTokens", "latencyMs", "costUsd"],
+      "properties": {
+        "promptCharacters": { "type": "integer", "minimum": 0 },
+        "inputTokens": { "type": ["integer", "null"], "minimum": 0 },
+        "outputTokens": { "type": ["integer", "null"], "minimum": 0 },
+        "latencyMs": { "type": ["number", "null"], "minimum": 0 },
+        "costUsd": { "type": ["number", "null"], "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "execution": {
+      "type": "object",
+      "required": ["status", "output"],
+      "properties": {
+        "status": { "enum": ["not_run", "completed", "failed"] },
+        "output": { "type": ["string", "null"] },
+        "executor": { "type": "string" },
+        "model": { "type": ["string", "null"] },
+        "error": { "type": ["string", "null"] },
+        "providerMetrics": { "type": "object" }
+      },
+      "additionalProperties": false
+    },
+    "arm": {
+      "type": "object",
+      "required": ["kind", "prompt", "contractChecks", "hardConstraintChecks", "metrics", "execution"],
+      "properties": {
+        "kind": { "enum": ["raw", "deterministic_baseline"] },
+        "prompt": { "type": "string" },
+        "contractChecks": { "type": "object" },
+        "hardConstraintChecks": { "type": "object" },
+        "metrics": { "$ref": "#/$defs/metrics" },
+        "execution": { "$ref": "#/$defs/execution" }
+      },
+      "additionalProperties": false
+    },
+    "candidateArm": {
+      "type": "object",
+      "required": ["kind", "prompt", "options", "compiler", "contractChecks", "hardConstraintChecks", "metrics", "execution"],
+      "properties": {
+        "kind": { "const": "deterministic_candidate" },
+        "prompt": { "type": "string" },
+        "options": { "type": "object" },
+        "compiler": {
+          "type": "object",
+          "required": ["name", "version", "mode", "pipelineSchemaVersion", "provenance"],
+          "properties": {
+            "name": { "type": "string" },
+            "version": { "type": "string" },
+            "mode": { "const": "deterministic" },
+            "pipelineSchemaVersion": { "type": "string" },
+            "provenance": {
+              "type": "object",
+              "required": ["sourceCharacters", "target", "profile", "profileRegistryVersion"],
+              "properties": {
+                "sourceCharacters": { "type": "integer", "minimum": 0 },
+                "target": { "type": "string" },
+                "profile": { "type": ["string", "null"] },
+                "profileRegistryVersion": { "type": "string" }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        },
+        "contractChecks": { "type": "object" },
+        "hardConstraintChecks": { "type": "object" },
+        "metrics": { "$ref": "#/$defs/metrics" },
+        "execution": { "$ref": "#/$defs/execution" }
+      },
+      "additionalProperties": false
+    },
+    "evidenceList": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/evidenceEntry" }
+    },
+    "evidenceEntry": {
+      "type": "object",
+      "required": ["effect", "value", "provenance", "source"],
+      "properties": {
+        "effect": { "enum": ["preserved", "made_explicit", "added"] },
+        "value": { "type": "string" },
+        "provenance": { "enum": ["user_supplied", "option_supplied", "compiler_added", "inferred", "unknown"] },
+        "source": { "type": "string" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

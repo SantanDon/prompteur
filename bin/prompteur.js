@@ -25,6 +25,7 @@ Compiler options:
   --output-format <id>       auto | markdown | json | code | table | prose | image
   --audience <text>          Intended audience
   --deliverable <text>       Explicit output contract
+  --profile <id>             Explicit experimental harness profile; never auto-selected
   --no-verify                Omit the verification contract
   --verify                   Include the verification contract (default)
 
@@ -98,6 +99,10 @@ function parseArguments(argv) {
         break;
       case '--deliverable':
         options.deliverable = nextValue(argv, index, arg);
+        index += 2;
+        break;
+      case '--profile':
+        options.profile = nextValue(argv, index, arg);
         index += 2;
         break;
       case '--file':

@@ -79,6 +79,11 @@ const COMPILER_ARGUMENT_SCHEMA = Object.freeze({
       default: true,
       description: 'Whether to include a lightweight verification contract.',
     },
+    profile: {
+      type: 'string',
+      enum: catalogIds(capabilities.profiles),
+      description: 'Optional explicit experimental harness profile. Profiles are never auto-selected.',
+    },
   },
   required: ['input'],
 });
@@ -126,6 +131,8 @@ const CAPABILITIES_OUTPUT_SCHEMA = Object.freeze({
     personas: { type: 'array' },
     tones: { type: 'array' },
     outputFormats: { type: 'array' },
+    profileRegistryVersion: { type: 'string' },
+    profiles: { type: 'array' },
     surfaces: { type: 'array' },
   },
   required: [
@@ -139,6 +146,8 @@ const CAPABILITIES_OUTPUT_SCHEMA = Object.freeze({
     'personas',
     'tones',
     'outputFormats',
+    'profileRegistryVersion',
+    'profiles',
     'surfaces',
   ],
 });
@@ -184,6 +193,7 @@ const COMPILER_ARGUMENT_KEYS = new Set([
   'audience',
   'deliverable',
   'verify',
+  'profile',
 ]);
 
 export class McpProtocolError extends Error {

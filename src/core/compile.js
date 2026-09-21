@@ -1,4 +1,5 @@
 import { OUTPUT_FORMATS, PERSONAS, TONES } from './catalog.js';
+import { applyHarnessProfile } from './profiles.js';
 
 function section(title, body) {
   if (!body || (Array.isArray(body) && body.length === 0)) return '';
@@ -18,12 +19,12 @@ function buildRole(ir) {
 
 function buildTargetInstructions(ir) {
   if (ir.behavior.target === 'agent') {
-    return [
+    return applyHarnessProfile(ir.behavior.target, [
       'Inspect the available context and tools before changing anything.',
       'Use the smallest coherent implementation that satisfies the objective.',
       'Do not invent file contents, commands, test results, or completed work.',
       'Verify the changed behavior and report remaining risk.',
-    ];
+    ], ir.behavior.profile);
   }
 
   if (ir.behavior.target === 'research') {

@@ -1,45 +1,65 @@
-
 # Agent status
 
-Updated: 2026-07-27
+Updated: 2026-09-21
 
-## Completed
+## Current state
 
-- Reframed Prompteur as a local-first intent compiler rather than a website-only prompt improver.
-- Added the shared `compileRequest` pipeline with versioned result contract, provenance, catalog validation, input limits, and stable errors.
-- Routed the browser and deterministic evaluation runner through the shared pipeline.
-- Added a dependency-free CLI supporting text, files, stdin, diagnostics, and complete JSON output.
-- Added loopback-only `/api/compile` and `/api/capabilities` endpoints.
-- Added JavaScript package exports and an OpenAPI contract.
-- Added pipeline, CLI, API, validation, and security regression tests.
-- Added the integration guide and ADR 0002.
-- Reordered the roadmap around Zero Copy-Paste, MCP, extension, direct execution, evaluation, and adaptive optimization.
-- Rebuilt the browser as a restrained compiler workbench with explicit hierarchy, accessible tabs, integrated contract signals, and 320 px containment rules.
-- Added `docs/DESIGN_SYSTEM.md`, `docs/DESIGN_TOOLING.md`, ADR 0003, a Figma/Playwright MCP example, and the `prompteur-frontend-design` Agent Skill.
-- Added the dependency-free stdio MCP server with compile, analyze, and capabilities tools.
-- Added protocol negotiation, strict tool schemas, structured results, read-only annotations, message limits, and model-visible tool errors.
-- Added MCP lifecycle, subprocess, parse-recovery, protocol-error, and stdout-purity regression tests.
-- Verified all tools through the official MCP TypeScript client.
-- Added `docs/MCP.md`, ADR 0004, package command/export, client configuration, and updated security/architecture contracts.
+Prompteur remains version 0.3.1 on the deterministic compiler boundary, but the working tree now contains the first evidence-backed v0.4 development slice.
 
-## Verification target
+Completed and verified locally:
 
-- Syntax checks for server, browser, pipeline, CLI, and MCP.
-- Node test suite including CLI, MCP stdio subprocess, HTTP bridge, and UI contract tests.
-- Six deterministic evaluation cases through the shared pipeline.
-- Desktop/tablet/390 px/320 px browser smoke tests, including overflow, keyboard tabs, dialog flow, and long content.
-- Static subpath/GitHub Pages module loading.
+- Shared deterministic `compileRequest` pipeline still powers browser, CLI, JavaScript API, loopback HTTP, MCP, and deterministic evaluations.
+- Added provider-free paired Raw vs Baseline evaluation records with explicit provenance and no unsupported "improved" claims.
+- Added optional Raw vs Baseline vs Candidate comparison support for experimental variants.
+- Added explicit downstream execution records with a localhost-only Ollama adapter; execution and grading remain separate.
+- Added an explicit-only experimental `managed-coding-agent` harness profile. It is never auto-selected and remains unpromoted after mixed evidence.
+- Hardened semantic-preservation extraction so language such as preserve / unchanged / identical / equivalent is treated as a hard constraint.
+- Preserved the instruction-injection / untrusted-input boundary after downstream evidence showed a concrete benefit on one tested model/case.
+- Rejected a default clarification branch after two rounds of underspecified-prompt testing failed the predeclared promotion gates.
+- Rejected more prompt-only semantic-verification wording after post-fix execution still produced semantic errors; the next hypothesis is independent/deterministic validation, not more prompt text.
 
-## Security state
+## Verification
 
-- API routes accept loopback clients only.
-- No permissive CORS.
-- Compile endpoint cannot invoke providers or commands.
-- Gemini keys remain memory-only in the browser.
-- Ollama remains localhost-only.
-- Static server remains allowlisted.
-- MCP opens no port, writes protocol-only stdout, and exposes no files, providers, network, persistence, or execution.
+Latest local verification on 2026-09-21:
 
-## Next priority
+- `npm run check`: PASS
+- Node tests: 49 total, 48 passed, 0 failed, 1 expected Windows symlink-permission skip
+- Deterministic evaluation: 6/6 passed
+- `npm run eval:paired`: PASS
+- Paired deterministic contract checks: 6/6
+- Extracted hard-constraint preservation: 6/6
+- No normal compile path labels a prompt "improved"
+- No cloud provider dependency was added to the ordinary compiler path
 
-Design an authenticated browser-extension handshake and compile-before-send prototype, then add IDE/repository-aware handoffs and a supervised direct-agent adapter.
+## Evidence checkpoint
+
+The current research/evidence sequence is captured in:
+
+- `.ai-bridge/PROMPTEUR_RESEARCH_2026-09-20.md`
+- `.ai-bridge/PROMPTEUR_V04_SLICE1_REPORT.md`
+- `.ai-bridge/PROMPTEUR_V04_SLICE2_REPORT.md`
+- `.ai-bridge/PROMPTEUR_V04_SLICE3_REPORT.md`
+- `.ai-bridge/PROMPTEUR_V04_EXECUTION_SLICE_REPORT.md`
+- `.ai-bridge/PROMPTEUR_H2_EVIDENCE_ROUND1_2026-09-21.md`
+- `.ai-bridge/PROMPTEUR_UNDERSPECIFIED_EVIDENCE_ROUND2_2026-09-21.md`
+- `.ai-bridge/PROMPTEUR_UNDERSPECIFIED_EVIDENCE_ROUND3_2026-09-21.md`
+- `.ai-bridge/PROMPTEUR_SEMANTIC_CONSTRAINT_EVIDENCE_ROUND4_2026-09-21.md`
+- `.ai-bridge/PROMPTEUR_SEMANTIC_CONSTRAINT_POSTFIX_2026-09-21.md`
+
+Raw local execution artifacts and experiment runners under `.ai-bridge/` are evidence, not release payloads, unless explicitly selected for a later reproducibility package.
+
+## GitHub / CI
+
+The latest known GitHub Actions run is blocked before job execution by GitHub's account-level message:
+
+> The job was not started because your account is locked due to a billing issue.
+
+GitHub Billing Overview shows GitHub Free and $0 current metered usage, so this is treated as an account/platform blocker rather than a code failure. Do not weaken CI or make a payment/spending change automatically.
+
+## Pause state
+
+The Prompteur Founder Loop and the temporary overnight guard were paused on 2026-09-21 after final verification.
+
+## Next priority when resumed
+
+Run a small independent semantic-validation experiment for executable equivalence tasks. Prefer deterministic counterexamples/tests or an independent verifier over more prompt scaffolding. Promote a new layer only if it catches real failures with acceptable latency/cost and does not regress ordinary well-specified tasks.

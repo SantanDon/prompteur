@@ -194,12 +194,21 @@ test('stdio entrypoint returns parse errors and continues processing later messa
 });
 
 
-test('MCP entrypoint works when launched through a package-style symlink', () => {
+test('MCP entrypoint works when launched through a package-style symlink', (t) => {
   const temporary = path.join(root, '.tmp-mcp-symlink-test');
   const symlink = path.join(temporary, 'prompteur-mcp.js');
   rmSync(temporary, { recursive: true, force: true });
   mkdirSync(temporary, { recursive: true });
-  symlinkSync(entrypoint, symlink);
+  try {
+    symlinkSync(entrypoint, symlink);
+  } catch (error) {
+    rmSync(temporary, { recursive: true, force: true });
+    if (process.platform === 'win32' && ['EPERM', 'EACCES'].includes(error?.code)) {
+      t.skip('Windows symlink privilege is unavailable; package-style symlink coverage still runs where the OS permits it.');
+      return;
+    }
+    throw error;
+  }
 
   try {
     const initializeMessage = request(1, 'initialize', {

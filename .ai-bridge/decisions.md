@@ -1,25 +1,30 @@
 # Decisions
 
-- Prompt quality is a minimal sufficient, target-aware, testable task contract.
+- Prompt quality means a minimal sufficient, target-aware, testable task contract, not a longer prompt.
 - Prompt IR is the model-neutral source of truth; rendered prompts are compiler outputs.
 - `compileRequest` is the shared deterministic product boundary.
-- Browser, CLI, HTTP, JavaScript, and evaluation surfaces must use the same pipeline.
+- Browser, CLI, HTTP, JavaScript, MCP, and evaluation surfaces must use the same pipeline.
 - Result contracts include engine version, schema version, Prompt IR, analysis, prompt, and provenance.
 - Deterministic compilation works without providers or network access.
-- Compilation and execution remain separate trust boundaries.
-- The local bridge accepts loopback clients only and does not allow unrelated web origins.
+- Compilation, downstream execution, and downstream grading are separate evidence/trust boundaries.
+- The local HTTP bridge accepts loopback clients only and does not allow unrelated web origins.
 - Unknown compiler options are rejected rather than silently ignored.
-- Model rewrites are candidates and require comparative evidence before being called improved.
+- Model rewrites and experimental variants are candidates and require comparative evidence before being called improved.
 - Runtime dependencies require a capability gap, maintenance assessment, tests, and an ADR.
 - Prompt behavior changes begin with representative evaluation cases.
-
-- The browser is a restrained compiler workbench, not a generic AI dashboard or marketing hero.
-- Gradients, glassmorphism, glow, card soup, and icon-only primary actions are prohibited defaults.
-- Figma remote MCP is preferred for structured design context; Playwright is required for browser evidence.
-- Storybook and frontend-framework adoption remain deferred until an ADR proves a real component-system need.
-- The project-specific UI workflow lives in `.agents/skills/prompteur-frontend-design/`.
-- MCP uses local newline-delimited stdio and the current stable `2025-11-25` revision; Streamable HTTP is out of scope without authentication and a threat model.
-- MCP exposes only `compile_intent`, `analyze_intent`, and `get_compiler_capabilities`.
-- MCP tools are deterministic, read-only, non-destructive, idempotent, and closed-world.
-- MCP imports only the shared pipeline; files, providers, networking, persistence, and execution remain separate boundaries.
-- The small MCP surface remains dependency-free and is release-tested with the official TypeScript client.
+- Contract coverage is a structural metric, not a downstream quality score.
+- Paired Raw/Baseline/Candidate records may capture execution evidence while keeping task-quality verdicts unevaluated until independent grading occurs.
+- Harness profiles are explicit-only, versioned, non-default, and fail closed when invalid or incompatible.
+- A harness profile may suppress redundant scaffolding as well as add instructions; no profile is promoted without measured benefit.
+- The `managed-coding-agent` profile remains experimental after mixed downstream evidence.
+- The instruction-injection/untrusted-input boundary remains because it showed a concrete downstream task-quality benefit in the first live local test.
+- A default clarification-contract branch is deferred because two underspecified-prompt rounds did not cross the predeclared promotion gates.
+- Semantic-preservation language such as preserve / unchanged / identical / equivalent belongs in hard-constraint extraction.
+- Prompt-only semantic-verification wording is not trusted as a verifier after it failed to prevent concrete equivalence errors.
+- The next semantic-safety hypothesis is an independent/deterministic validation layer, not more prompt text.
+- Whole-chat context dumping remains rejected; future context hydration must be selective, provenance-aware, and evidence-gated.
+- Autonomous prompt optimizers and recursive self-prompting remain out of the default product until bounded experiments prove value.
+- The browser remains a restrained compiler workbench, not a generic AI dashboard.
+- Gradients, glassmorphism, glow, card soup, and icon-only primary actions remain prohibited defaults.
+- MCP remains local stdio, tools-only, read-only, non-destructive, and closed-world.
+- GitHub CI account/billing lock is tracked separately from code health; local green checks do not justify weakening CI or changing billing automatically.
