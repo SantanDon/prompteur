@@ -1,264 +1,248 @@
+![Prompteur: a clearer brief for your AI. Intent → checks → task contract.](docs/assets/prompteur-banner.svg)
 
 # Prompteur
 
-**A local-first intent compiler and integration bridge for AI models and agents.**
+**Check your AI request. Turn it into an explicit task brief.**
 
-Prompteur turns rough human intent into a structured, target-aware, testable task contract. It diagnoses ambiguity and unsafe instruction boundaries, compiles a deterministic prompt, and exposes that same result through a browser workbench, CLI, JavaScript API, loopback HTTP bridge, and local MCP server.
+Prompteur is a local-first prompt compiler and linter. It checks a request for common gaps, then organizes it into instructions covering the objective, constraints, output, and verification. You can inspect the result or call the same compiler from an agent or script.
 
-> Better prompts are not necessarily longer. They are clearer, appropriately constrained, target-aware, and testable.
+[![Node.js 22 or newer](https://img.shields.io/badge/Node.js-22%2B-d1e982?style=flat-square&labelColor=252720)](https://nodejs.org/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-d1e982?style=flat-square&labelColor=252720)](LICENSE)
 
-## Zero Copy-Paste
+**[Open the demo](https://santandon.github.io/prompteur/)** · [Quick start](#quick-start) · [Agent integration](#use-it-from-your-tools) · [OpenCode plans](#opencode-plugin-proposed) · [Documentation](#documentation)
 
-Prompteur is no longer limited to a website workflow. Version `0.3` introduces one shared compilation pipeline that can be called directly from shells, scripts, agents, and local tools.
+---
+
+## What does it actually do?
+
+| Step | What happens | What you get |
+| :--- | :--- | :--- |
+| **Check** | Rules look for vague objectives, missing output requirements, and other defined issues. | Findings and suggested changes. |
+| **Compile** | The compiler organizes your request for a general, coding-agent, research, or image target. | A structured prompt called a **task contract**. |
+| **Inspect** | The same result includes diagnostics, provenance, and a structured representation called **Prompt IR**. | An explanation of what the compiler produced. |
+
+For example, give it:
+
+> Review the login flow. Do not change the public API. Return a Markdown checklist.
+
+With the **agent** target and **markdown** output format, the compiled result includes:
 
 ```text
-human intent
-   ↓
-shared Prompteur pipeline
-   ├── browser workbench
-   ├── CLI / stdin / files
-   ├── JavaScript API
-   ├── local HTTP bridge
-   ├── MCP agents
-   └── deterministic evaluation runner
+## Hard constraints
+- Do not change the public API.
+
+## Execution method
+- Inspect the available context and tools before changing anything.
+- Use the smallest coherent implementation that satisfies the objective.
+- Do not invent file contents, commands, test results, or completed work.
+- Verify the changed behavior and report remaining risk.
 ```
 
-The next integration surfaces—browser extension, IDE actions, and direct agent execution—will wrap this same pipeline rather than reimplementing prompt behavior.
+*An excerpt from the deterministic output. Prompteur writes instructions; it does not perform that review or run those checks.*
 
-## Try the browser workbench
+### When is it useful?
 
-Public deterministic demo:
+- **Before handing off a task:** notice missing context or an unspecified deliverable.
+- **Inside tools:** obtain one consistent, machine-readable result through CLI, JavaScript, HTTP, or MCP.
+- **When testing prompt changes:** compare raw requests and compiled variants using the evaluation tooling.
 
-- https://santandon.github.io/prompteur/
-
-The GitHub Pages demo performs local deterministic compilation in the browser. Optional provider calls and the HTTP bridge require the local Node server.
+**A longer prompt is not proof of a better result.** Readiness scores are rule-based signals, not accuracy predictions. Whether compilation helps your model on your tasks still needs evaluation; a clear original request may already be enough.
 
 ## Quick start
 
-Requirements:
+### Explore without installing anything
 
-- Node.js 22 or newer.
+Open the **[browser demo](https://santandon.github.io/prompteur/)**, enter a request, choose a target, and select **Compile intent**. Inspect the contract, findings, and Prompt IR. Compilation runs in your browser; the demo does not provide the local provider proxy.
 
-Run the local workbench and bridge:
+### Compile from your terminal
+
+Requires **[Node.js 22+](https://nodejs.org/)** and Git. No dependency installation or API key is needed.
+
+```bash
+git clone https://github.com/SantanDon/prompteur.git
+cd prompteur
+node bin/prompteur.js --target agent --output-format markdown "Review the login flow. Do not change the public API. Return a Markdown checklist."
+```
+
+The contract prints in your terminal. To inspect a vague request instead:
+
+```bash
+node bin/prompteur.js analyze "Fix this"
+```
+
+### Start the local bridge
+
+From the cloned repository:
 
 ```bash
 npm start
 ```
 
-Open:
+The server listens at **http://127.0.0.1:3030**. It hosts the workbench, local HTTP API, and optional provider proxy. Stop it with **Ctrl+C**.
 
-```text
-http://127.0.0.1:3030
-```
+> [!NOTE]
+> The `0.3.1` local workbench has a known startup issue: its static allowlist omits `src/core/profiles.js`. Use the hosted demo or CLI while that fix is pending. The deterministic HTTP API is separate from this browser-loading issue. Opening `index.html` directly is not supported.
 
-No dependency installation, model, database, or API key is required for deterministic compilation.
+## Use it from your tools
 
-> Do not double-click `index.html` to run the interactive application. Browsers restrict JavaScript modules loaded from `file://` URLs. Use `npm start` or the hosted demo.
+One shared `compileRequest` pipeline backs every deterministic interface.
 
-## CLI
+| Interface | Entry point | Best for |
+| :--- | :--- | :--- |
+| Browser | [Hosted workbench](https://santandon.github.io/prompteur/) | Exploring contracts and diagnostics |
+| CLI | `node bin/prompteur.js` | Text, files, stdin, and shell pipelines |
+| JavaScript | `src/core/pipeline.js` | Embedding compilation in another tool |
+| HTTP | `POST /api/compile` | Local processes using a JSON API |
+| MCP | `node bin/prompteur-mcp.js` | Letting an agent call compiler tools directly |
 
-Use the CLI directly from the repository:
-
-```bash
-node bin/prompteur.js --target agent "Review this repository and fix the failing tests."
-```
-
-Create a reusable local command:
-
-```bash
-npm link
-prompteur --version
-```
-
-Compile from text, a file, or stdin:
+<details>
+<summary><strong>CLI: files, stdin, JSON, and a reusable command</strong></summary>
 
 ```bash
-prompteur --target agent "Improve authentication and verify the result."
-prompteur --file user_task.md --target agent > compiled-task.md
-echo "Research local AI evaluation tools" | prompteur --target research
+node bin/prompteur.js --file user_task.md --target agent > compiled-task.md
+echo "Compare local AI evaluation tools" | node bin/prompteur.js --target research
+node bin/prompteur.js --target research --json "Compare prompt evaluation methods."
+node bin/prompteur.js capabilities
+node bin/prompteur.js --help
 ```
 
-Return the full machine-readable result for another tool or agent:
+Optionally run `npm link` from the repository to make `prompteur` and `prompteur-mcp` available as local commands.
 
-```bash
-prompteur --target research --json "Compare prompt evaluation methods."
+</details>
+
+<details>
+<summary><strong>MCP: three read-only tools for your agent</strong></summary>
+
+Configure your MCP client to launch `node` with the absolute path to `bin/prompteur-mcp.js`. The client starts the stdio process; no HTTP server or browser is needed.
+
+| Tool | Result |
+| :--- | :--- |
+| `compile_intent` | Compiled contract, Prompt IR, diagnostics, and provenance |
+| `analyze_intent` | Analysis without the rendered contract |
+| `get_compiler_capabilities` | Supported options, targets, and limits |
+
+The MCP server has no file access, command execution, provider calls, network access, or prompt persistence. Configuration syntax depends on the client. See the [MCP guide](docs/MCP.md).
+
+</details>
+
+<details>
+<summary><strong>JavaScript: call the compiler directly</strong></summary>
+
+From a JavaScript module in the cloned repository:
+
+```js
+import { compileRequest } from './src/core/pipeline.js';
+
+const result = compileRequest('Review the login flow. Do not change the public API.', {
+  target: 'agent',
+  outputFormat: 'markdown',
+});
+
+console.log(result.prompt);
+console.log(result.analysis);
 ```
 
-Inspect weaknesses without printing the compiled prompt:
+The package also exports this pipeline as `prompteur` when used as a package dependency.
 
-```bash
-prompteur analyze "Fix this"
-```
+</details>
 
-Run `prompteur --help` for the complete command contract.
+<details>
+<summary><strong>HTTP: use the loopback JSON API</strong></summary>
 
-
-## MCP server
-
-Prompteur can be called directly by local MCP-capable agents. Create the command once:
-
-```bash
-npm link
-```
-
-Then add a local stdio server to the client:
-
-```json
-{
-  "mcpServers": {
-    "prompteur": {
-      "command": "prompteur-mcp",
-      "args": []
-    }
-  }
-}
-```
-
-Available read-only tools:
-
-- `compile_intent`
-- `analyze_intent`
-- `get_compiler_capabilities`
-
-The MCP server cannot read files, execute commands, call providers, access the network, persist prompts, or mutate state. See [`docs/MCP.md`](docs/MCP.md).
-
-## Local HTTP bridge
-
-Start `npm start`, then call:
+With `npm start` running, call it from another terminal. Bash example:
 
 ```bash
 curl -s http://127.0.0.1:3030/api/compile \
   -H "Content-Type: application/json" \
-  -d '{"input":"Review this repository and fix the failing tests.","options":{"target":"agent","outputFormat":"code"}}'
+  -d '{"input":"Review the login flow. Do not change the public API.","options":{"target":"agent","outputFormat":"markdown"}}'
 ```
 
-Capabilities:
+Discover supported options with `GET /api/capabilities`. The [OpenAPI document](openapi.json) is also served at `/openapi.json`. The API accepts loopback clients and does not send permissive CORS headers. See [Integrations](docs/INTEGRATIONS.md).
+
+</details>
+
+## OpenCode plugin: proposed
+
+**An inline OpenCode plugin is not implemented yet.** MCP integration exists today, but it does not automatically check or rewrite every message you send.
+
+The proposed plugin would check requests where you already type, preserve your original message by default, and compile a replacement only when explicitly requested.
+
+| Proposed command | Intended behavior |
+| :--- | :--- |
+| `/prompteur on` | Enable checks for the current chat |
+| `/prompteur off` | Bypass checks for subsequent messages |
+| `/prompteur status` | Show whether checks are enabled |
+| `/prompteur improve …` | Compile one request explicitly |
+
+These commands are a design proposal, **not available commands**. The intended default is off. Any automatic rewriting would need evidence that it helps real tasks before becoming a default.
+
+## Optional model candidates
+
+Deterministic compilation needs no model. Optional rewrites use **Ollama on localhost** or **Gemini** through the local server's provider endpoints. They produce candidates, not verified improvements.
+
+- **Ollama:** run a local model and select it in the workbench's provider settings. Remote Ollama hosts are rejected.
+- **Gemini:** set `GEMINI_API_KEY` in the server environment, or enter it for the current browser session. Browser-entered keys are not saved to local storage. Generating a Gemini candidate sends the request and baseline to Gemini.
+
+Provider settings require a working local workbench; see the startup note above. Default settings are documented in [`config.example.env`](config.example.env).
+
+## Status and limits
+
+**Current package: `0.3.1` · Experimental, local-first tooling**
+
+| Available | Experimental | Proposed |
+| :--- | :--- | :--- |
+| Compiler and rule-based linting | Explicit harness profiles | Inline OpenCode plugin |
+| CLI, JavaScript, HTTP, MCP | Raw/baseline/candidate evaluation records | Browser extension and IDE actions |
+| Hosted browser workbench | Opt-in Ollama evaluation execution | Project memory and supervised agent execution |
+
+Review generated contracts before use. Current limitations include whitespace normalization that can alter pasted source, heuristic constraint extraction that can mistake quoted material for instructions, and output-format inference that may need an explicit override. The linter is not a prompt-injection security boundary.
+
+Paired evaluation tooling exists, but execution alone does not grade task quality or justify an “improved” label. See [evaluation methods](evaluations/README.md) and the [roadmap](docs/ROADMAP.md).
+
+## Development
+
+Use Node.js 22+ from the repository root:
+
+| Command | Purpose |
+| :--- | :--- |
+| `npm start` | Local server and provider proxy |
+| `npm run compile -- "Your request"` | Compile through npm |
+| `npm run mcp` | Start stdio transport for an MCP client |
+| `npm test` | Run the Node.js test suite |
+| `npm run eval` | Run deterministic regression cases |
+| `npm run eval:paired` | Build raw-versus-baseline records without model calls |
+| `npm run check` | Run configured syntax checks, tests, and deterministic cases |
+
+Compiler and linter changes should start with a concrete case and a regression test. Read [CONTRIBUTING.md](CONTRIBUTING.md) and [AGENTS.md](AGENTS.md) before changing behavior.
+
+<details>
+<summary><strong>Repository map</strong></summary>
 
 ```text
-GET http://127.0.0.1:3030/api/capabilities
+src/core/          Shared pipeline, Prompt IR, lint rules, and compilation
+src/mcp/           Local read-only MCP adapter
+src/providers/     Browser client for optional providers
+src/app.js         Browser interactions
+bin/               CLI and MCP entrypoints
+server.js          Allowlisted static server, local API, provider proxy
+evaluations/       Regression cases and paired evaluation records
+scripts/           Deterministic and opt-in execution runners
+tests/             Core, integration, protocol, UI-contract, and security tests
+docs/              Product, architecture, design, integrations, and decisions
 ```
 
-OpenAPI contract:
+</details>
 
-```text
-http://127.0.0.1:3030/openapi.json
-```
+## Documentation
 
-The API accepts loopback clients only and intentionally sends no permissive CORS headers. See [`docs/INTEGRATIONS.md`](docs/INTEGRATIONS.md).
+| Understand the product | Integrate and develop |
+| :--- | :--- |
+| [Product philosophy](docs/PRODUCT_PHILOSOPHY.md) | [Integration guide](docs/INTEGRATIONS.md) |
+| [Architecture](docs/ARCHITECTURE.md) | [MCP reference](docs/MCP.md) |
+| [Research](docs/RESEARCH.md) | [Evaluation methods](evaluations/README.md) |
+| [Roadmap](docs/ROADMAP.md) | [Maintainer workflow](docs/MAINTAINER_LOOP.md) |
+| [Design system](docs/DESIGN_SYSTEM.md) | [Design tooling](docs/DESIGN_TOOLING.md) |
 
-## JavaScript API
+---
 
-```js
-import { compileRequest } from 'prompteur';
-
-const result = compileRequest('Investigate the failing tests.', {
-  target: 'agent',
-  tone: 'direct',
-  outputFormat: 'code',
-});
-
-console.log(result.prompt);
-```
-
-## Current capabilities
-
-- **Shared compilation pipeline** — one versioned result contract across every product surface.
-- **Prompt IR** — separates objective, context, constraints, audience, output, verification, and target behavior.
-- **Deterministic linting** — flags vague objectives, implicit context, missing output contracts, conflicts, prompt injection, persona bloat, and other defined failure modes.
-- **Target compilers** — general model, coding/tool agent, research model, and image model.
-- **CLI, MCP, and HTTP bridge** — text, stdin, files, direct agent tools, JSON output, capabilities discovery, and OpenAPI.
-- **Authored browser workbench** — a responsive source-to-contract interface with accessible tabs, integrated contract signals, and explicit provider state.
-- **Inspectable browser results** — compiled prompt, diagnostics, readiness dimensions, and serialized IR.
-- **Optional candidates** — local Ollama or Gemini model-assisted rewrites, clearly distinguished from the deterministic baseline.
-- **Local-first security** — no model required, Gemini keys are not persisted, Ollama is restricted to localhost, API clients must be loopback, and the server exposes only approved files.
-- **Regression cases** — deterministic prompt behavior is checked in tests and an evaluation-case runner.
-- **Agent-maintained repository** — explicit architecture, product invariants, ADRs, and maintainer workflow.
-
-## Optional model providers
-
-### Ollama
-
-1. Run Ollama locally.
-2. Ensure the desired model is installed.
-3. Open Prompteur settings.
-4. Select **Ollama candidate**.
-5. Set the localhost URL and model name.
-
-Remote Ollama hosts are intentionally rejected.
-
-### Gemini
-
-Set `GEMINI_API_KEY` in the server environment, or enter a key in the settings dialog for the current page session. Keys entered in the browser remain in memory only and are not written to local storage.
-
-Optional defaults are listed in `config.example.env`.
-
-## Commands
-
-```bash
-npm start      # local workbench and loopback bridge
-npm run compile -- "Your request"  # invoke the CLI through npm
-npm run mcp    # start the stdio MCP server for a local client
-npm test       # unit, CLI, pipeline, and server tests
-npm run eval   # deterministic prompt regression cases
-npm run check  # syntax, tests, and evaluations
-```
-
-## Repository map
-
-```text
-bin/prompteur.js     Composable CLI
-bin/prompteur-mcp.js Local stdio MCP entrypoint
-src/core/pipeline.js Shared deterministic product pipeline
-src/core/            Prompt IR, lint rules, catalogs, compiler, versions
-src/providers/       Browser client for optional providers
-src/mcp/             Dependency-free MCP protocol adapter
-src/app.js           Browser interaction and accessible state
-style.css             Prompteur visual system and responsive layout
-.agents/skills/       Project-specific agent workflows
-openapi.json         Local bridge contract
-evaluations/         Representative prompt regression cases
-scripts/             Evaluation runner
-tests/               Core, pipeline, CLI, MCP, server, UI, and security tests
-docs/                Product, design, integrations, architecture, roadmap, ADRs
-server.js             Secure static server, local bridge, provider proxy
-AGENTS.md             Rules for agent maintainers
-```
-
-## Design philosophy
-
-Prompteur deliberately avoids:
-
-- universal “super prompt” templates,
-- applying every prompting framework at once,
-- prestige personas as a substitute for task detail,
-- hidden optimizer decisions,
-- storing secrets in browser storage,
-- exposing an unauthenticated bridge to arbitrary web pages,
-- claiming a rewrite is improved without evaluation evidence,
-- generic AI gradients, glass panels, glow, card soup, and icon-only primary controls.
-
-Read:
-
-- [`docs/PRODUCT_PHILOSOPHY.md`](docs/PRODUCT_PHILOSOPHY.md)
-- [`docs/INTEGRATIONS.md`](docs/INTEGRATIONS.md)
-- [`docs/MCP.md`](docs/MCP.md)
-- [`docs/DESIGN_SYSTEM.md`](docs/DESIGN_SYSTEM.md)
-- [`docs/DESIGN_TOOLING.md`](docs/DESIGN_TOOLING.md)
-- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
-- [`docs/RESEARCH.md`](docs/RESEARCH.md)
-- [`docs/ROADMAP.md`](docs/ROADMAP.md)
-- [`docs/MAINTAINER_LOOP.md`](docs/MAINTAINER_LOOP.md)
-
-## Project status
-
-Prompteur `0.3` is the first Zero Copy-Paste foundation. Deterministic compilation is reusable from the browser, CLI, JavaScript, local HTTP, MCP, and evaluation runner. Browser extension, direct agent execution, comparative evaluation, and project memory remain roadmap work.
-
-The readiness score is a transparent contract heuristic. It is not a scientific measure of factual accuracy, model intelligence, or downstream benchmark performance.
-
-## Contributing
-
-Read [`CONTRIBUTING.md`](CONTRIBUTING.md) and [`AGENTS.md`](AGENTS.md). Compiler and linter changes should begin with a representative case and preserve all security and product invariants.
-
-## License
-
-MIT © 2026 Don Santos
+[MIT](LICENSE) © 2026 Don Santos · **Clear intent first. Evidence before improvement claims.**
