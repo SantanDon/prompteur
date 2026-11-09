@@ -1,4 +1,4 @@
-![Prompteur: a clearer brief for your AI. Intent → checks → task contract.](docs/assets/prompteur-banner.svg)
+![Prompteur: a clearer brief for your AI. Loose manuscript strips become an ordered task contract.](docs/assets/prompteur-banner.webp)
 
 # Prompteur
 
